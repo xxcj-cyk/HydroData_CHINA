@@ -1,50 +1,35 @@
-# -*- coding: utf-8 -*-
-# @Author: Yikai CHAI
-# @Date:   2025-03-23 10:11:16
-# @Last Modified by:   Yikai CHAI
-# @Last Modified time: 2025-04-23 15:43:12
+"""
+@Author:             Yikai CHAI
+@Email:              chaiyikai@mail.dlut.edu.cn
+@Company:            Dalian University of Technology
+@Date:               2025-04-26 11:06:32
+@Last Modified by:   Yikai CHAI
+@Last Modified time: 2025-04-26 15:08:32
+"""
+
+
 from pathlib import Path
 from hydrodatautils.foundation import hydro_dirction
 
 DATASETS_DIR = {
-    "CAMELS_US_HydroATLAS": {
-        "EXPORT_DIR": Path(hydro_dirction.get_export_dir(dataset_type="Dataset_TL", dataset_name="CAMELS_US_HydroATLAS")),
+    "Sanxia_1D": {
+        "ROOT_DIR": Path(hydro_dirction.get_origin_dir(dataset_type="Dataset_China", dataset_name="Sanxia_Project")),
+        "CACHE_DIR": Path(hydro_dirction.get_cache_dir(dataset_type="Dataset_China", dataset_name="Sanxia_1D")),
+        "EXPORT_DIR": Path(hydro_dirction.get_export_dir(dataset_type="Dataset_China", dataset_name="Sanxia_1D")),
     },
-    "CAMELS_US_MSWEP": {
-        "EXPORT_DIR": Path(hydro_dirction.get_export_dir(dataset_type="Dataset_TL", dataset_name="CAMELS_US_MSWEP")),
+    "Sanxia_1H": {
+        "ROOT_DIR": Path(hydro_dirction.get_origin_dir(dataset_type="Dataset_China", dataset_name="Sanxia_Project")),
+        "CACHE_DIR": Path(hydro_dirction.get_cache_dir(dataset_type="Dataset_China", dataset_name="Sanxia_1H")),
+        "EXPORT_DIR": Path(hydro_dirction.get_export_dir(dataset_type="Dataset_China", dataset_name="Sanxia_1H")),
     },
-    "CAMELS_US_ERA5Land": {
-        "EXPORT_DIR": Path(hydro_dirction.get_export_dir(dataset_type="Dataset_TL", dataset_name="CAMELS_US_ERA5Land")),
+    "Anhui_1D": {
+        "ROOT_DIR": Path(hydro_dirction.get_origin_dir(dataset_type="Dataset_China", dataset_name="Anhui_Project")),
+        "CACHE_DIR": Path(hydro_dirction.get_cache_dir(dataset_type="Dataset_China", dataset_name="Anhui_1D")),
+        "EXPORT_DIR": Path(hydro_dirction.get_export_dir(dataset_type="Dataset_China", dataset_name="Anhui_1D")),
     },
-    "CAMELS_US_HydroATLAS_ERA5Land": {
-        "EXPORT_DIR": Path(hydro_dirction.get_export_dir(dataset_type="Dataset_TL", dataset_name="CAMELS_US_HydroATLAS_ERA5Land")),
-    },
-    "CAMELS_US_HydroATLAS_MSWEP_ERA5Land": {
-        "EXPORT_DIR": Path(hydro_dirction.get_export_dir(dataset_type="Dataset_TL", dataset_name="CAMELS_US_HydroATLAS_MSWEP_ERA5Land")),
-    },
-    "CAMELS_US_HydroATLAS_MSWEP_ERA5Land-har": {
-        "EXPORT_DIR": Path(hydro_dirction.get_export_dir(dataset_type="Dataset_TL", dataset_name="CAMELS_US_HydroATLAS_MSWEP_ERA5Land-har")),
-    },
-    "CAMELS_US_Budyko": {
-        "EXPORT_DIR": Path(hydro_dirction.get_export_dir(dataset_type="Dataset_TL", dataset_name="CAMELS_US_Budyko")),
-    },
-    "Changdian_HydroATLAS_ERA5Land": {
-        "EXPORT_DIR": Path(hydro_dirction.get_export_dir(dataset_type="Dataset_TL", dataset_name="Changdian_HydroATLAS_ERA5Land")),
-    },
-    "Changdian_HydroATLAS_MSWEP_ERA5Land": {
-        "EXPORT_DIR": Path(hydro_dirction.get_export_dir(dataset_type="Dataset_TL", dataset_name="Changdian_HydroATLAS_MSWEP_ERA5Land")),
-    },
-}
-
-DATA_DIR = {
-    "hydro_ouyang": {
-        "CACHE_DIR": Path(hydro_dirction.get_cache_dir(dataset_type="Dataset_TL", dataset_name="hydro_ouyang")),
-    },
-    "MSWEP_700_1993-2024": {
-        "CACHE_DIR": Path(hydro_dirction.get_cache_dir(dataset_type="Dataset_TL", dataset_name="MSWEP_700_1993-2024")),
-    },
-    "CAMELS_US_ERA5-Land": {
-        "ORIGIN_DIR": Path(hydro_dirction.get_origin_dir(dataset_type="Dataset_CAMELS_Extend", dataset_name="CAMELS_US_ERA5-Land")),
-        "CACHE_DIR": Path(hydro_dirction.get_cache_dir(dataset_type="Dataset_TL", dataset_name="CAMELS_US_ERA5-Land")),
+    "Anhui_1H": {
+        "ROOT_DIR": Path(hydro_dirction.get_origin_dir(dataset_type="Dataset_China", dataset_name="Anhui_Project")),
+        "CACHE_DIR": Path(hydro_dirction.get_cache_dir(dataset_type="Dataset_China", dataset_name="Anhui_1H")),
+        "EXPORT_DIR": Path(hydro_dirction.get_export_dir(dataset_type="Dataset_China", dataset_name="Anhui_1H")),
     },
 }
