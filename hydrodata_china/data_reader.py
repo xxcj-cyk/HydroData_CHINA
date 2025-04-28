@@ -4,16 +4,16 @@
 @Company:            Dalian University of Technology
 @Date:               2025-03-30 10:44:43
 @Last Modified by:   Yikai CHAI
-@Last Modified time: 2025-04-23 09:03:14
+@Last Modified time: 2025-04-28 23:54:06
 """
 
 import xarray as xr
 import os
 import re
-from hydrodata_camels.settings.datasets_dir import DATASETS_DIR
+from hydrodata_china.settings.datasets_dir import DATASETS_DIR
 
 
-class ReadDataset_CAMELS:
+class ReadDataset_CHINA:
     def __init__(self, dataset_type=None, source_name=None, source_path=None, time_unit=["1D"]):
         self.dataset_type = dataset_type
         self.source_name = source_name
