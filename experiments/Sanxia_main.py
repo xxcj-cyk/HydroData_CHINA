@@ -4,10 +4,10 @@
 @Company:            Dalian University of Technology
 @Date:               2025-04-26 11:12:10
 @Last Modified by:   Yikai CHAI
-@Last Modified time: 2025-04-28 23:48:55
+@Last Modified time: 2025-04-28 23:51:09
 """
 
-from hydrodata_china.datasets.sanxia import Sanxia_1D
+from hydrodata_china.datasets.sanxia_1d import Sanxia_1D
 
 # 测试函数
 if __name__ == "__main__":
