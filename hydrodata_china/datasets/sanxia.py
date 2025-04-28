@@ -4,7 +4,7 @@
 @Company:            Dalian University of Technology
 @Date:               2025-04-26 11:11:01
 @Last Modified by:   Yikai CHAI
-@Last Modified time: 2025-04-27 11:01:14
+@Last Modified time: 2025-04-27 17:16:28
 """
 
 import numpy as np
@@ -330,8 +330,27 @@ class Sanxia_1D:
         # 读取目标数据集 (流量数据)
         target_file = self.cache_path.joinpath("sanxia_target.nc")
         with xr.open_dataset(target_file) as ds_target:
-            # 将小时尺度聚合为日尺度
-            ds_target_daily = ds_target.resample(time="1D").mean()                
+            # 读取流域属性以获取面积
+            attributes_file = self.cache_path.joinpath("sanxia_attributes.nc")
+            with xr.open_dataset(attributes_file) as ds_attr:
+                # 提取流域面积 (应为 km²)
+                basin_area = ds_attr['area']  # 直接使用，不需要to_dataarray()
+            
+            # 计算转换因子: (m³/s) 转换为 (mm/h)
+            # 公式: Q(mm/h) = Q(m³/s) * 3600(s/h) / (basin_area(km²) * 10^6(m²/km²)) * 1000(mm/m)
+            # 简化为: Q(mm/h) = Q(m³/s) * 3.6 / basin_area(km²)
+            conversion_factor = 3.6 / basin_area
+            
+            # 应用转换因子 (m³/s 到 mm/h)
+            for var in ['streamflow']:  # 对所有流量变量应用转换
+                if var in ds_target:
+                    ds_target[var] = ds_target[var] * conversion_factor
+            
+            # 将小时尺度聚合为日尺度 (mm/h 到 mm/d，需要对每天的24小时值求和)
+            ds_target_daily = ds_target.resample(time="1D").sum()
+            ds_target_daily = ds_target_daily.transpose('basin', 'time')
+            
+            # 设置正确的单位属性
             ds_target_daily['streamflow'].attrs['units'] = 'mm/d'
         
         # 读取三峡降雨数据并聚合为日尺度
@@ -339,6 +358,7 @@ class Sanxia_1D:
         with xr.open_dataset(sanxia_file) as ds_sanxia:
             # 将小时尺度聚合为日尺度（使用sum而不是mean，因为是降水量）
             ds_sanxia_daily = ds_sanxia.resample(time="1D").sum()
+            ds_sanxia_daily = ds_sanxia_daily.transpose('basin', 'time')
             ds_sanxia_daily = ds_sanxia_daily.rename({'mean_rainfall': 'precipitation_sanxia'})
             ds_sanxia_daily['precipitation_sanxia'].attrs['units'] = 'mm/d'
         
@@ -417,9 +437,13 @@ class Sanxia_1D:
         
         # ERA5-Land数据 - 遍历所有变量
         for var in ds_era5.data_vars:
-            ds_merged[var] = ds_era5[var].sel(
-                time=slice(time_min, time_max)
-            )
+            # 选择正确的时间范围
+            var_data = ds_era5[var].sel(time=slice(time_min, time_max))
+            # 确保维度顺序正确
+            if var_data.dims != ('basin', 'time'):
+                var_data = var_data.transpose('basin', 'time')
+            # 正确赋值
+            ds_merged[var] = var_data
         
         # 保存标准化的数据集
         ds_merged.to_netcdf(output_file)
