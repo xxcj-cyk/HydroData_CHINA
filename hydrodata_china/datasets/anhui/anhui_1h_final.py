@@ -4,7 +4,7 @@
 @Company:            Dalian University of Technology
 @Date:               2025-05-29 10:52:13
 @Last Modified by:   Yikai CHAI
-@Last Modified time: 2025-05-29 15:21:36
+@Last Modified time: 2025-06-08 21:51:12
 """
 
 import os
@@ -880,8 +880,8 @@ if __name__ == "__main__":
     print(f"总训练场次: {sum(len(samples) for samples in train_sets.values())}")
     print(f"总验证场次: {sum(len(samples) for samples in val_sets.values())}")
     
-    # 2. 处理文件
-    print("\n" + "=" * 50)
-    print("开始处理NC文件...")
-    print("=" * 50)
-    process_nc_files(data_folder, output_folder)
+    # # 2. 处理文件
+    # print("\n" + "=" * 50)
+    # print("开始处理NC文件...")
+    # print("=" * 50)
+    # process_nc_files(data_folder, output_folder)
