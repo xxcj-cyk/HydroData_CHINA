@@ -9,6 +9,7 @@
 
 import os
 import pandas as pd
+import pytz
 import glob
 import logging
 import xarray as xr  # 添加xarray库导入
@@ -80,10 +81,25 @@ def process_csv_files(input_dir, output_dir):
                 "basin_id": basin_id,
             }
         )
+        
+        # 添加时区转换代码
+        # 首先将时间坐标转换为pandas DatetimeIndex并添加UTC时区信息
+        time_utc = pd.to_datetime(ds.time.values).tz_localize('UTC')
+        
+        # 然后转换到中国时区
+        time_china = time_utc.tz_convert('Asia/Shanghai')
+        
+        # 更新Dataset中的时间坐标
+        ds = ds.assign_coords(time=time_china)
+        
+        # 如果需要去掉时区信息（某些操作可能需要naive datetime）
+        ds = ds.assign_coords(time=time_china.tz_localize(None))
+        
         # 保存为NC文件
         output_file = os.path.join(output_dir, f'{basin_id}_PET.nc')
         ds.to_netcdf(output_file)
         logging.info(f'已保存流域 {basin_id} 的数据到 {output_file}，共 {len(basin_df)} 条记录')
+    
     logging.info(f'处理完成，共处理了 {len(basin_data)} 个流域的数据')
 
 if __name__ == '__main__':

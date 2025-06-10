@@ -41,7 +41,7 @@ def read_evaporation_data(evaporation_file_path, station_names):
         evaporation_file_path: 包含蒸发数据的xlsx文件路径
         station_names: 需要读取的蒸发站名称列表  
     Returns:
-        字典，键为蒸发站名称，值为包含该站月平均蒸发数据的DataFrame
+        字典，键为蒸发站名称，值为包含该站月平均蒸发数据的DataFrame和多年平均值
     """
     station_data = {}
     # 获取文件中的所有sheet名称
@@ -58,27 +58,32 @@ def read_evaporation_data(evaporation_file_path, station_names):
                 # 重命名列
                 new_columns = ['年'] + [f'{i}月' for i in range(1, 13)]
                 df.columns = new_columns[:len(df.columns)]
-                # 删除最后一行（多年平均值）
+                
+                # 保存多年平均值（最后一行）
+                multi_year_avg = None
                 if len(df) > 0:
+                    multi_year_avg = df.iloc[-1].copy()
+                    # 删除最后一行（多年平均值）用于常规处理
                     df = df.iloc[:-1].copy()
+                
                 # 确保年份列是数值类型
                 df['年'] = pd.to_numeric(df['年'], errors='coerce')
                 # 过滤掉无效年份的行
                 df = df.dropna(subset=['年'])
-                station_data[station] = df
+                station_data[station] = {'data': df, 'multi_year_avg': multi_year_avg}
                 logging.info(f"成功读取蒸发站'{station}'的数据，共{len(df)}年")
             else:
                 logging.warning(f"蒸发站'{station}'的数据格式不正确，列数不足")
         else:
             logging.warning(f"蒸发站'{station}'在文件中不存在")
-    return station_data  # 这里错误地缩进在for循环内部
+    return station_data
 
 
-def convert_monthly_to_hourly(monthly_df, start_year, end_year):
+def convert_monthly_to_hourly(monthly_data, start_year, end_year):
     """
     将月平均蒸发数据转换为小时尺度数据
     Args:
-        monthly_df: 包含月平均蒸发数据的DataFrame
+        monthly_data: 包含月平均蒸发数据的字典，包含'data'和'multi_year_avg'两个键
         start_year: 起始年份
         end_year: 结束年份
     Returns:
@@ -86,6 +91,9 @@ def convert_monthly_to_hourly(monthly_df, start_year, end_year):
     """
     # 创建一个空的DataFrame来存储小时数据
     hourly_data = []
+    monthly_df = monthly_data['data']
+    multi_year_avg = monthly_data['multi_year_avg']
+    
     logging.info(f"开始将月平均数据转换为小时尺度数据，处理成{start_year}至{end_year}年的数据")
     # 获取年份列和月份列
     year_col = '年'
@@ -95,13 +103,52 @@ def convert_monthly_to_hourly(monthly_df, start_year, end_year):
         # 查找该年份的数据
         year_data = monthly_df[monthly_df[year_col] == year]
         if len(year_data) == 0:
-            # 如果没有该年份的数据，则所有小时都设为NaN
-            start_date = datetime.datetime(year, 1, 1, 0, 0, 0)
-            end_date = datetime.datetime(year + 1, 1, 1, 0, 0, 0)
-            dates = pd.date_range(start=start_date, end=end_date - datetime.timedelta(seconds=1), freq='H')
-            year_hourly = pd.DataFrame({'time': dates, 'evaporation': np.nan})
-            hourly_data.append(year_hourly)
-            logging.warning(f"{year}年的数据不存在，已设置为NaN")
+            # 如果没有该年份的数据，则使用多年平均值
+            if multi_year_avg is not None:
+                start_date = datetime.datetime(year, 1, 1, 0, 0, 0)
+                end_date = datetime.datetime(year + 1, 1, 1, 0, 0, 0)
+                dates = pd.date_range(start=start_date, end=end_date - datetime.timedelta(seconds=1), freq='H')
+                
+                # 使用多年平均值计算每月的小时数据
+                month_hourly_data = []
+                for month_idx, month_col in enumerate(month_cols, 1):
+                    # 获取该月的天数
+                    days_in_month = calendar.monthrange(year, month_idx)[1]
+                    # 获取该月的多年平均蒸发量
+                    monthly_evap = multi_year_avg[month_col] if month_col in multi_year_avg.index else np.nan
+                    
+                    # 如果月平均值为NaN，则该月所有小时都设为NaN
+                    if pd.isna(monthly_evap):
+                        daily_evap = np.nan
+                        hourly_evap = np.nan
+                    else:
+                        # 将月平均值转换为日平均值（假设每月的日平均值相同）
+                        daily_evap = monthly_evap / days_in_month
+                        # 将日平均值转换为小时平均值（假设每天的小时平均值相同）
+                        hourly_evap = daily_evap / 24
+                    
+                    # 创建该月的小时时间序列
+                    start_date = datetime.datetime(year, month_idx, 1, 0, 0, 0)
+                    if month_idx < 12:
+                        end_date = datetime.datetime(year, month_idx + 1, 1, 0, 0, 0)
+                    else:
+                        end_date = datetime.datetime(year + 1, 1, 1, 0, 0, 0)
+                    dates = pd.date_range(start=start_date, end=end_date - datetime.timedelta(seconds=1), freq='H')
+                    month_hourly = pd.DataFrame({'time': dates, 'evaporation': hourly_evap})
+                    month_hourly_data.append(month_hourly)
+                
+                # 合并该年所有月的小时数据
+                year_hourly = pd.concat(month_hourly_data, ignore_index=True)
+                hourly_data.append(year_hourly)
+                logging.warning(f"{year}年的数据不存在，已使用多年平均值计算")
+            else:
+                # 如果没有多年平均值，则设为NaN
+                start_date = datetime.datetime(year, 1, 1, 0, 0, 0)
+                end_date = datetime.datetime(year + 1, 1, 1, 0, 0, 0)
+                dates = pd.date_range(start=start_date, end=end_date - datetime.timedelta(seconds=1), freq='H')
+                year_hourly = pd.DataFrame({'time': dates, 'evaporation': np.nan})
+                hourly_data.append(year_hourly)
+                logging.warning(f"{year}年的数据不存在，且无多年平均值，已设置为NaN")
         else:
             # 获取该年份的月平均蒸发数据
             row = year_data.iloc[0]
@@ -155,9 +202,9 @@ def process_evaporation_data(basin_station_mapping, station_data, output_dir, st
             logging.warning(f"流域{basin_id}对应的蒸发站'{station_name}'数据不可用，跳过处理")
             continue
         # 获取该蒸发站的月平均数据
-        monthly_df = station_data[station_name]
+        monthly_data = station_data[station_name]  # 现在是一个包含'data'和'multi_year_avg'的字典
         # 转换为小时尺度
-        hourly_df = convert_monthly_to_hourly(monthly_df, start_year, end_year)
+        hourly_df = convert_monthly_to_hourly(monthly_data, start_year, end_year)
         # 将DataFrame转换为xarray Dataset
         ds = xr.Dataset(
             {
