@@ -232,7 +232,7 @@ if __name__ == "__main__":
     evaporation_file_path = r"E:\Takusan_no_Code\Dataset\Original_Dataset\Dataset_CHINA\Anhui\ET_Station_21\多年平均月蒸散发.xlsx"
     output_dir = r"E:\Takusan_no_Code\Dataset\Interim_Dataset\Dataset_CHINA\Anhui_1H_ET"
     # 设置年份范围
-    start_year = 1959
+    start_year = 1960
     end_year = 2022
     logging.info("开始处理安徽流域蒸发数据")
     # 读取流域和蒸发站的映射关系

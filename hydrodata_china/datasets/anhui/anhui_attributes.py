@@ -156,7 +156,7 @@ def create_basin_attributes_nc(matched_data, output_nc_file):
 if __name__ == "__main__":
     # 设置目录路径
     nc_directory_path = r"E:\Takusan_no_Code\Dataset\Interim_Dataset\Dataset_CHINA\Anhui_1H"
-    attributes_file = r"E:\Takusan_no_Code\Dataset\Original_Dataset\Dataset_CHINA\Anhui\attributes.csv"
+    attributes_file = r"E:\Takusan_no_Code\Dataset\Original_Dataset\Dataset_CHINA\Anhui\Attribute_21\attributes.csv"
     
     # 获取nc文件列表（不含扩展名）
     nc_files = list_nc_files(nc_directory_path)

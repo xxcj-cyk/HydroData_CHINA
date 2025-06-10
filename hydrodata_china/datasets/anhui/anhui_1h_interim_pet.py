@@ -9,7 +9,6 @@
 
 import os
 import pandas as pd
-import pytz
 import glob
 import logging
 import xarray as xr  # 添加xarray库导入
@@ -82,18 +81,16 @@ def process_csv_files(input_dir, output_dir):
             }
         )
         
-        # 添加时区转换代码
-        # 首先将时间坐标转换为pandas DatetimeIndex并添加UTC时区信息
-        time_utc = pd.to_datetime(ds.time.values).tz_localize('UTC')
-        
-        # 然后转换到中国时区
-        time_china = time_utc.tz_convert('Asia/Shanghai')
-        
-        # 更新Dataset中的时间坐标
+        # 简单的时间偏移方法（避免夏令时问题）
+        # 将UTC时间转换为中国时间（UTC+8）
+        time_china = pd.to_datetime(ds.time.values) + pd.Timedelta(hours=8)
         ds = ds.assign_coords(time=time_china)
         
-        # 如果需要去掉时区信息（某些操作可能需要naive datetime）
-        ds = ds.assign_coords(time=time_china.tz_localize(None))
+        logging.info(f"已将流域 {basin_id} 的时间从UTC转换为中国时间（UTC+8）")
+        
+        # 筛选1960~2022年的数据
+        ds = ds.sel(time=slice('1960-01-01', '2022-12-31 23:59:59'))
+        logging.info(f'筛选后流域 {basin_id} 的数据范围为 {ds.time.values.min()} 到 {ds.time.values.max()}，共 {len(ds.time)} 条记录')
         
         # 保存为NC文件
         output_file = os.path.join(output_dir, f'{basin_id}_PET.nc')
