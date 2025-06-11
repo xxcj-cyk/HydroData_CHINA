@@ -3,8 +3,8 @@
 @Email:              chaiyikai@mail.dlut.edu.cn
 @Company:            Dalian University of Technology
 @Date:               2025-06-09 10:15:56
-@Last Modified by:  Yikai CHAI
-@Last Modified time:2025-06-10 15:30:19
+@Last Modified by:   Yikai CHAI
+@Last Modified time: 2025-06-11 11:21:36
 """
 
 import os
@@ -12,11 +12,11 @@ import pandas as pd
 import glob
 import logging
 import xarray as xr  # 添加xarray库导入
-"""
-ERA5-Land需要时差转换
-"""
+
+
 # 配置日志
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
 
 def process_csv_files(input_dir, output_dir):
     """
@@ -80,24 +80,19 @@ def process_csv_files(input_dir, output_dir):
                 "basin_id": basin_id,
             }
         )
-        
-        # 简单的时间偏移方法（避免夏令时问题）
         # 将UTC时间转换为中国时间（UTC+8）
         time_china = pd.to_datetime(ds.time.values) + pd.Timedelta(hours=8)
         ds = ds.assign_coords(time=time_china)
-        
         logging.info(f"已将流域 {basin_id} 的时间从UTC转换为中国时间（UTC+8）")
-        
         # 筛选1960~2022年的数据
         ds = ds.sel(time=slice('1960-01-01', '2022-12-31 23:59:59'))
         logging.info(f'筛选后流域 {basin_id} 的数据范围为 {ds.time.values.min()} 到 {ds.time.values.max()}，共 {len(ds.time)} 条记录')
-        
         # 保存为NC文件
         output_file = os.path.join(output_dir, f'{basin_id}_PET.nc')
         ds.to_netcdf(output_file)
         logging.info(f'已保存流域 {basin_id} 的数据到 {output_file}，共 {len(basin_df)} 条记录')
-    
     logging.info(f'处理完成，共处理了 {len(basin_data)} 个流域的数据')
+
 
 if __name__ == '__main__':
     # 设置输入和输出目录

@@ -4,7 +4,7 @@
 @Company:            Dalian University of Technology
 @Date:               2025-05-29 17:31:00
 @Last Modified by:   Yikai CHAI
-@Last Modified time: 2025-06-10 15:30:50
+@Last Modified time: 2025-06-11 11:22:10
 """
 
 import os
@@ -15,13 +15,16 @@ import logging
 from collections import defaultdict
 import warnings
 
+
 warnings.filterwarnings("ignore", message="invalid value encountered in cast")
+
 
 # 配置日志
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s',
 )
+
 
 def extract_basin_id(filename):
     """
@@ -100,54 +103,42 @@ def merge_nc_files_by_basin(input_folder, output_folder):
     """
     # 确保输出文件夹存在
     os.makedirs(output_folder, exist_ok=True)
-    
     # 获取所有nc文件
     nc_files = glob.glob(os.path.join(input_folder, "*.nc"))
-    
     if not nc_files:
         logging.error(f"错误: 在 {input_folder} 中未找到任何nc文件")
         return [], []
-    
     logging.info(f"共找到 {len(nc_files)} 个nc文件待处理")
-    
     # 按流域ID分组
     basin_files = defaultdict(list)
     for file_path in nc_files:
         basin_id = extract_basin_id(file_path)
         if basin_id:
             basin_files[basin_id].append(file_path)
-    
     logging.info(f"共找到 {len(basin_files)} 个不同的流域")
-    
     # 记录成功和失败的流域
     success_basins = []
     failed_basins = []
-    
     # 处理每个流域的文件
     for basin_id, files in basin_files.items():
         logging.info(f"处理流域 {basin_id}，共 {len(files)} 个文件")
-        
         # 读取该流域的所有nc文件
         datasets = []
-        
         for file_path in files:
             ds = xr.open_dataset(file_path)
             # 提取事件ID作为新的维度
             event_id = os.path.basename(file_path).split('.')[0]  # 去掉.nc后缀
             ds = ds.expand_dims({"basin": [event_id]})
             datasets.append(ds)
-        
         if not datasets:
             logging.warning(f"流域 {basin_id} 没有有效的数据集，跳过")
             failed_basins.append(basin_id)
             continue
-        
         # 合并数据集
         merged_ds = xr.concat(datasets, dim="basin")
         # 添加流域ID作为全局属性
         merged_ds.attrs["basin_id"] = basin_id
         merged_ds.attrs["flood_event_count"] = len(files)
-        
         # 添加变量单位信息
         if 'streamflow' in merged_ds:
             merged_ds['streamflow'].attrs['units'] = 'mm/h'
@@ -191,7 +182,6 @@ def merge_nc_files_by_basin(input_folder, output_folder):
         merged_ds.to_netcdf(output_file)
         logging.info(f"已将流域 {basin_id} 的 {len(files)} 个文件合并为 {output_file}")
         success_basins.append(basin_id)
-    
     # 输出处理结果摘要
     logging.info(f"成功处理的流域数量: {len(success_basins)}")
     if success_basins:
@@ -199,8 +189,8 @@ def merge_nc_files_by_basin(input_folder, output_folder):
     logging.info(f"处理失败的流域数量: {len(failed_basins)}")
     if failed_basins:
         logging.info(f"处理失败的流域ID: {', '.join(failed_basins)}")
-
     return success_basins, failed_basins    
+
 
 if __name__ == "__main__":
     input_folder = r"E:\Takusan_no_Code\Dataset\Processed_Dataset\Dataset_CHINA\Anhui_1H_Flood"

@@ -4,7 +4,7 @@
 @Company:            Dalian University of Technology
 @Date:               2023-07-13 10:00:00
 @Last Modified by:   Yikai CHAI
-@Last Modified time: 2025-06-10 15:30:44
+@Last Modified time: 2025-06-11 11:20:21
 """
 
 import os
@@ -13,8 +13,10 @@ import logging
 import re
 import xarray as xr
 
+
 # 配置日志
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
 
 def merge_et_pet_data(flood_data_dir, et_data_dir, pet_data_dir, output_dir):
     """
@@ -97,6 +99,7 @@ def merge_et_pet_data(flood_data_dir, et_data_dir, pet_data_dir, output_dir):
         et_ds.close()
         pet_ds.close()
     logging.info(f"处理完成，共处理了 {processed_count} 个文件")
+
 
 if __name__ == "__main__":
     # 设置数据目录

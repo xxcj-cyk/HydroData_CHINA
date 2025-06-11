@@ -4,7 +4,7 @@
 @Company:            Dalian University of Technology
 @Date:               2025-05-27 17:33:16
 @Last Modified by:   Yikai CHAI
-@Last Modified time: 2025-06-10 15:30:37
+@Last Modified time: 2025-06-11 11:21:13
 """
 
 import os
@@ -15,8 +15,10 @@ import re
 import xarray as xr
 from pathlib import Path
 
+
 # 配置日志
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
 
 # 添加流域面积字典 (km²)
 BASIN_AREAS = {
@@ -42,6 +44,7 @@ BASIN_AREAS = {
     "70112150": 5.08,
     "70114100": 98.83
 }
+
 
 def read_flood_data(root_folder):
     """读取洪水数据文件夹中的所有Excel文件"""

@@ -4,7 +4,7 @@
 @Company:            Dalian University of Technology
 @Date:               2025-06-09 11:06:49
 @Last Modified by:   Yikai CHAI
-@Last Modified time: 2025-06-10 15:30:25
+@Last Modified time: 2025-06-11 11:30:27
 """
 
 import os
@@ -15,8 +15,10 @@ import calendar
 import logging
 import xarray as xr  # 添加xarray库导入
 
+
 # 配置日志
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
 
 def read_basin_evaporation_mapping(mapping_file_path):
     """
@@ -65,7 +67,6 @@ def read_evaporation_data(evaporation_file_path, station_names):
                     multi_year_avg = df.iloc[-1].copy()
                     # 删除最后一行（多年平均值）用于常规处理
                     df = df.iloc[:-1].copy()
-                
                 # 确保年份列是数值类型
                 df['年'] = pd.to_numeric(df['年'], errors='coerce')
                 # 过滤掉无效年份的行
@@ -93,7 +94,6 @@ def convert_monthly_to_hourly(monthly_data, start_year, end_year):
     hourly_data = []
     monthly_df = monthly_data['data']
     multi_year_avg = monthly_data['multi_year_avg']
-    
     logging.info(f"开始将月平均数据转换为小时尺度数据，处理成{start_year}至{end_year}年的数据")
     # 获取年份列和月份列
     year_col = '年'
@@ -107,8 +107,7 @@ def convert_monthly_to_hourly(monthly_data, start_year, end_year):
             if multi_year_avg is not None:
                 start_date = datetime.datetime(year, 1, 1, 0, 0, 0)
                 end_date = datetime.datetime(year + 1, 1, 1, 0, 0, 0)
-                dates = pd.date_range(start=start_date, end=end_date - datetime.timedelta(seconds=1), freq='H')
-                
+                dates = pd.date_range(start=start_date, end=end_date - datetime.timedelta(seconds=1), freq='h')
                 # 使用多年平均值计算每月的小时数据
                 month_hourly_data = []
                 for month_idx, month_col in enumerate(month_cols, 1):
@@ -116,7 +115,6 @@ def convert_monthly_to_hourly(monthly_data, start_year, end_year):
                     days_in_month = calendar.monthrange(year, month_idx)[1]
                     # 获取该月的多年平均蒸发量
                     monthly_evap = multi_year_avg[month_col] if month_col in multi_year_avg.index else np.nan
-                    
                     # 如果月平均值为NaN，则该月所有小时都设为NaN
                     if pd.isna(monthly_evap):
                         daily_evap = np.nan
@@ -126,17 +124,15 @@ def convert_monthly_to_hourly(monthly_data, start_year, end_year):
                         daily_evap = monthly_evap / days_in_month
                         # 将日平均值转换为小时平均值（假设每天的小时平均值相同）
                         hourly_evap = daily_evap / 24
-                    
                     # 创建该月的小时时间序列
                     start_date = datetime.datetime(year, month_idx, 1, 0, 0, 0)
                     if month_idx < 12:
                         end_date = datetime.datetime(year, month_idx + 1, 1, 0, 0, 0)
                     else:
                         end_date = datetime.datetime(year + 1, 1, 1, 0, 0, 0)
-                    dates = pd.date_range(start=start_date, end=end_date - datetime.timedelta(seconds=1), freq='H')
+                    dates = pd.date_range(start=start_date, end=end_date - datetime.timedelta(seconds=1), freq='h')
                     month_hourly = pd.DataFrame({'time': dates, 'evaporation': hourly_evap})
                     month_hourly_data.append(month_hourly)
-                
                 # 合并该年所有月的小时数据
                 year_hourly = pd.concat(month_hourly_data, ignore_index=True)
                 hourly_data.append(year_hourly)
@@ -145,7 +141,7 @@ def convert_monthly_to_hourly(monthly_data, start_year, end_year):
                 # 如果没有多年平均值，则设为NaN
                 start_date = datetime.datetime(year, 1, 1, 0, 0, 0)
                 end_date = datetime.datetime(year + 1, 1, 1, 0, 0, 0)
-                dates = pd.date_range(start=start_date, end=end_date - datetime.timedelta(seconds=1), freq='H')
+                dates = pd.date_range(start=start_date, end=end_date - datetime.timedelta(seconds=1), freq='h')
                 year_hourly = pd.DataFrame({'time': dates, 'evaporation': np.nan})
                 hourly_data.append(year_hourly)
                 logging.warning(f"{year}年的数据不存在，且无多年平均值，已设置为NaN")
@@ -173,7 +169,7 @@ def convert_monthly_to_hourly(monthly_data, start_year, end_year):
                     end_date = datetime.datetime(year, month_idx + 1, 1, 0, 0, 0)
                 else:
                     end_date = datetime.datetime(year + 1, 1, 1, 0, 0, 0)
-                dates = pd.date_range(start=start_date, end=end_date - datetime.timedelta(seconds=1), freq='H')
+                dates = pd.date_range(start=start_date, end=end_date - datetime.timedelta(seconds=1), freq='h')
                 month_hourly = pd.DataFrame({'time': dates, 'evaporation': hourly_evap})
                 hourly_data.append(month_hourly)
     # 合并所有小时数据
@@ -225,6 +221,7 @@ def process_evaporation_data(basin_station_mapping, station_data, output_dir, st
         processed_count += 1
         logging.info(f"已保存流域{basin_id}的蒸发数据到{output_file}，共{len(hourly_df)}条记录")
     logging.info(f"处理完成，共处理了{processed_count}个流域的数据")
+
 
 if __name__ == "__main__":
     # 设置文件路径
