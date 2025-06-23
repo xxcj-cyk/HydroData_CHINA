@@ -4,7 +4,7 @@
 @Company:            Dalian University of Technology
 @Date:               2025-05-29 10:52:13
 @Last Modified by:   Yikai CHAI
-@Last Modified time: 2025-06-11 11:25:33
+@Last Modified time: 2025-06-19 11:18:48
 """
 
 import os
@@ -12,6 +12,7 @@ import glob
 import numpy as np
 import xarray as xr
 import warnings
+import csv
 
 
 warnings.filterwarnings("ignore", message="Converting non-nanosecond precision datetime")
@@ -89,6 +90,59 @@ def identify_train_val_sets(folder_path, train_ratio=0.8, min_validation_samples
         print(f"  - 训练集: {train_count} 场次")
         print(f"  - 验证集: {val_count} 场次")
     return train_sets, val_sets
+
+
+def export_sets_to_csv(train_sets, val_sets, output_folder):
+    """
+    将训练集和验证集的ID导出到CSV文件
+    
+    参数:
+        train_sets (dict): 训练集字典，键为流域ID，值为训练集场次列表
+        val_sets (dict): 验证集字典，键为流域ID，值为验证集场次列表
+        output_folder (str): 输出CSV文件的文件夹路径
+    
+    返回:
+        tuple: 包含两个字符串，分别是训练集和验证集CSV文件的路径
+    """
+    # 确保输出文件夹存在
+    os.makedirs(output_folder, exist_ok=True)
+    
+    # 定义输出文件路径
+    train_csv_path = os.path.join(output_folder, "train_sets.csv")
+    val_csv_path = os.path.join(output_folder, "validation_sets.csv")
+    
+    # 导出训练集ID到CSV
+    with open(train_csv_path, 'w', newline='') as csvfile:
+        writer = csv.writer(csvfile)
+        writer.writerow(['basin'])  # 写入表头
+        for basin_id, events in train_sets.items():
+            for event_id in events:
+                # 检查event_id是否已经包含Anhui_前缀
+                if event_id.startswith(f"Anhui_{basin_id}"):
+                    formatted_id = event_id
+                else:
+                    # 格式化为 Anhui_流域id_场次id
+                    formatted_id = f"Anhui_{basin_id}_{event_id}"
+                writer.writerow([formatted_id])
+    
+    # 导出验证集ID到CSV
+    with open(val_csv_path, 'w', newline='') as csvfile:
+        writer = csv.writer(csvfile)
+        writer.writerow(['basin'])  # 写入表头
+        for basin_id, events in val_sets.items():
+            for event_id in events:
+                # 检查event_id是否已经包含Anhui_前缀
+                if event_id.startswith(f"Anhui_{basin_id}"):
+                    formatted_id = event_id
+                else:
+                    # 格式化为 Anhui_流域id_场次id
+                    formatted_id = f"Anhui_{basin_id}_{event_id}"
+                writer.writerow([formatted_id])
+    
+    print(f"\n训练集ID已导出到: {train_csv_path}")
+    print(f"验证集ID已导出到: {val_csv_path}")
+    
+    return train_csv_path, val_csv_path
 
 
 def process_nc_files(input_folder, output_folder):
@@ -427,7 +481,13 @@ if __name__ == "__main__":
     print(f"总流域数: {len(train_sets)}")
     print(f"总训练场次: {sum(len(samples) for samples in train_sets.values())}")
     print(f"总验证场次: {sum(len(samples) for samples in val_sets.values())}")
-    # 2. 处理文件
+    # 2. 导出训练集和验证集ID到CSV
+    print("\n" + "=" * 50)
+    print("导出训练集和验证集ID到CSV文件...")
+    print("=" * 50)
+    export_sets_to_csv(train_sets, val_sets, output_folder)
+    
+    # 3. 处理文件
     print("\n" + "=" * 50)
     print("开始处理NC文件...")
     print("=" * 50)

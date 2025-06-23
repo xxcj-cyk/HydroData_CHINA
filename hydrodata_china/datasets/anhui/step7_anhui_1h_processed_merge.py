@@ -4,7 +4,7 @@
 @Company:            Dalian University of Technology
 @Date:               2025-05-29 17:31:00
 @Last Modified by:   Yikai CHAI
-@Last Modified time: 2025-06-11 11:22:10
+@Last Modified time: 2025-06-19 11:18:44
 """
 
 import os
@@ -61,9 +61,9 @@ def reorder_dataset(ds):
         'P_50436550',
         'P_50436650',
         'P_ERA5-Land',
-        'ET_Anhui',
-        'ET_ERA5-Land',
+        'PET_Anhui',
         'PET_ERA5-Land',
+        'ET_ERA5-Land',
         'T_ERA5-Land',
         'streamflow_obs',
         'streamflow_pred_xaj',
@@ -149,8 +149,8 @@ def merge_nc_files_by_basin(input_folder, output_folder):
         if 'P_Anhui' in merged_ds:
             merged_ds['P_Anhui'].attrs['units'] = 'mm/h'
         if 'evaporation' in merged_ds:
-            merged_ds = merged_ds.rename({'evaporation': 'ET_Anhui'})
-            merged_ds['ET_Anhui'].attrs['units'] = 'mm/h'
+            merged_ds = merged_ds.rename({'evaporation': 'PET_Anhui'})
+            merged_ds['PET_Anhui'].attrs['units'] = 'mm/h'
         if 'total_precipitation_hourly' in merged_ds:
             merged_ds = merged_ds.rename({'total_precipitation_hourly': 'P_ERA5-Land'})
             merged_ds['P_ERA5-Land'].attrs['units'] = 'mm/h'
