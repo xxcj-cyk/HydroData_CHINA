@@ -4,7 +4,7 @@
 @Company:            Dalian University of Technology
 @Date:               2025-06-11 11:26:00
 @Last Modified by:   Yikai CHAI
-@Last Modified time: 2025-06-22 11:49:36
+@Last Modified time: 2025-07-02 09:18:16
 """
 
 import os
@@ -134,8 +134,8 @@ def plot_metric_boxplot(df, metric, output_dir=None):
     plt.show()
 
 def main():
-    csv_dir = r"E:\Takusan_no_Code\Dataset\Interim_Dataset\Dataset_CHINA\Anhui_FloodEvent_Period"
-    output_dir = r"E:\Takusan_no_Code\Dataset\Interim_Dataset\Dataset_CHINA\Anhui_FloodEvent_Period\Result"
+    csv_dir = r"E:\Takusan_no_Code\Dataset\Interim_Dataset\Dataset_CHINA\Anhui_1H_Flood_CSV"
+    output_dir = r"E:\Takusan_no_Code\Dataset\Interim_Dataset\Dataset_CHINA\Anhui_1H_Flood_CSV\Result"
     os.makedirs(output_dir, exist_ok=True)
     df = process_csv_files(csv_dir)
     # 打印统计信息
