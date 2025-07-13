@@ -4,7 +4,7 @@
 @Company:            Dalian University of Technology
 @Date:               2025-06-11 11:26:00
 @Last Modified by:   Yikai CHAI
-@Last Modified time: 2025-06-22 16:28:16
+@Last Modified time: 2025-06-30 16:48:26
 """
 
 import os
@@ -76,14 +76,14 @@ def export_to_csv_by_basin(obs_ds, pred_ds, output_dir, mode='V'):
 
 if __name__ == '__main__':
     # 设置文件路径
-    obs_file_path = r"E:\Takusan_no_Code\Paper\Paper2_Anhui_FloodEvent\Result\Month\Anhui_EnLoss-dPL\anhui21_797_PET_Anhui\epoch_best_flow_obs.nc"
-    pred_file_path = r"E:\Takusan_no_Code\Paper\Paper2_Anhui_FloodEvent\Result\Month\Anhui_EnLoss-dPL\anhui21_797_PET_Anhui\epoch_best_flow_pred.nc"
-    obs_file_path_T = r"E:\Takusan_no_Code\Paper\Paper2_Anhui_FloodEvent\Result\Month\Anhui_EnLoss-dPL\anhui21_797_PET_Anhui\epoch_best_model.pth_flow_obs.nc"
-    pred_file_path_T = r"E:\Takusan_no_Code\Paper\Paper2_Anhui_FloodEvent\Result\Month\Anhui_EnLoss-dPL\anhui21_797_PET_Anhui\epoch_best_model.pth_flow_pred.nc"
+    obs_file_path = r"E:\Takusan_no_Code\Paper\Paper2_Anhui_FloodEvent\Result\Sec1_ModelPerf\Month\Anhui_LSTM\anhui21_797_PET_Anhui\epoch_best_flow_obs.nc"
+    pred_file_path = r"E:\Takusan_no_Code\Paper\Paper2_Anhui_FloodEvent\Result\Sec1_ModelPerf\Month\Anhui_LSTM\anhui21_797_PET_Anhui\epoch_best_flow_pred.nc"
+    obs_file_path_T = r"E:\Takusan_no_Code\Paper\Paper2_Anhui_FloodEvent\Result\Sec1_ModelPerf\Month\Anhui_LSTM\anhui21_797_PET_Anhui_train\epoch_best_model.pth_flow_obs.nc"
+    pred_file_path_T = r"E:\Takusan_no_Code\Paper\Paper2_Anhui_FloodEvent\Result\Sec1_ModelPerf\Month\Anhui_LSTM\anhui21_797_PET_Anhui_train\epoch_best_model.pth_flow_pred.nc"
 
     # 设置输出目录
-    output_dir = r"E:\Takusan_no_Code\Paper\Paper2_Anhui_FloodEvent\Result\Month\Anhui_EnLoss-dPL\anhui21_797_PET_Anhui"
-    output_dir_T = r"E:\Takusan_no_Code\Paper\Paper2_Anhui_FloodEvent\Result\Month\Anhui_EnLoss-dPL\anhui21_797_PET_Anhui"
+    output_dir = r"E:\Takusan_no_Code\Paper\Paper2_Anhui_FloodEvent\Result\Sec1_ModelPerf\Month\Anhui_LSTM\anhui21_797_PET_Anhui\nc2csv_month"
+    output_dir_T = r"E:\Takusan_no_Code\Paper\Paper2_Anhui_FloodEvent\Result\Sec1_ModelPerf\Month\Anhui_LSTM\anhui21_797_PET_Anhui\nc2csv_month"
 
     # 读取NetCDF文件并导出V集
     print('正在读取NetCDF文件（V集）...')

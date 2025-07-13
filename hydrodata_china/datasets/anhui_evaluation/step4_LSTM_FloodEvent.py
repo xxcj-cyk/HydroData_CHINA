@@ -4,7 +4,7 @@
 @Company:            Dalian University of Technology
 @Date:               2025-06-11 11:26:00
 @Last Modified by:   Yikai CHAI
-@Last Modified time: 2025-06-22 16:28:47
+@Last Modified time: 2025-06-30 16:58:49
 """
 
 import os
@@ -163,11 +163,11 @@ def plot_metric_boxplot(df, metric, output_dir=None):
         output_path = os.path.join(output_dir, f'{metric}_boxplot.png')
         plt.savefig(output_path, dpi=300, bbox_inches='tight')
         print(f"{metric.upper()}箱型图已保存至: {output_path}")
-    plt.show()
+    # plt.show()
 
 def main():
-    csv_dir = r"E:\Takusan_no_Code\Paper\Paper2_Anhui_FloodEvent\Result\Period\Anhui_EnLoss-dPL\anhui21_797_PET_Anhui"
-    output_dir = r"E:\Takusan_no_Code\Paper\Paper2_Anhui_FloodEvent\Result\Period\Anhui_EnLoss-dPL\anhui21_797_PET_Anhui\Result"
+    csv_dir = r"E:\Takusan_no_Code\Paper\Paper2_Anhui_FloodEvent\Result\Sec1_ModelPerf\Period\Anhui_dPL\nc2csv_period"
+    output_dir = r"E:\Takusan_no_Code\Paper\Paper2_Anhui_FloodEvent\Visualization\Sec1_ModelPerf\Period\Anhui_dPL\dPL_Local"
     os.makedirs(output_dir, exist_ok=True)
     df = process_csv_files(csv_dir)
     # 打印统计信息
@@ -186,6 +186,36 @@ def main():
     # 绘制各指标箱型图
     for metric in ['nse', 'kge', 'corr', 'rmse', 'pfe', 'pte']:
         plot_metric_boxplot(df, metric, output_dir)
+    # 绘制所有流域整体NSE和PFE箱型图
+    for metric in ['nse', 'pfe']:
+        plt.figure(figsize=(6, 8))
+        sns.set_style("whitegrid")
+        ax = sns.boxplot(y=df[metric], color="skyblue")
+        plt.ylabel(f'{metric.upper()}', fontsize=20)
+        plt.xlabel('All Basins', fontsize=20)
+        plt.grid(True, linestyle='--', alpha=0.7)
+        ylims = {
+            'nse': (0, 1),
+            'pfe': (-80, 80)
+        }
+        if metric in ylims:
+            plt.ylim(ylims[metric])
+            ax.set_yticklabels(ax.get_yticklabels(), fontsize=18)
+        # 标注中位数
+        median_val = df[metric].median()
+        ymin, ymax = ylims.get(metric, (None, None))
+        if ymin is not None and ymax is not None and (median_val >= ymin and median_val <= ymax):
+            if metric == 'pfe':
+                median_str = f"{int(round(median_val))}"
+            else:
+                median_str = f"{median_val:.3f}"
+            ax.text(0, median_val + (ymax - ymin) * 0.01, median_str, 
+                    ha='center', va='bottom', fontsize=16, color='black')
+        plt.tight_layout()
+        output_path = os.path.join(output_dir, f'AllBasins_{metric}_boxplot.png')
+        plt.savefig(output_path, dpi=300, bbox_inches='tight')
+        print(f"所有流域整体{metric.upper()}箱型图已保存至: {output_path}")
+        # plt.show()
     # 只导出需要的字段
     export_columns = ['basin', 'nse', 'kge', 'corr', 'rmse', 'pfe', 'pte']
     base_name = "_".join(os.path.normpath(csv_dir).split(os.sep)[-2:]) + "_Evaluation.csv"

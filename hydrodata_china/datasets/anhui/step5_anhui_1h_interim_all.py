@@ -4,7 +4,7 @@
 @Company:            Dalian University of Technology
 @Date:               2023-07-13 10:00:00
 @Last Modified by:   Yikai CHAI
-@Last Modified time: 2025-06-11 11:20:21
+@Last Modified time: 2025-07-05 11:34:09
 """
 
 import os
@@ -103,9 +103,9 @@ def merge_et_pet_data(flood_data_dir, et_data_dir, pet_data_dir, output_dir):
 
 if __name__ == "__main__":
     # 设置数据目录
-    flood_data_dir = r"E:\Takusan_no_Code\Dataset\Interim_Dataset\Dataset_CHINA\Anhui_1H_Flood"
+    flood_data_dir = r"E:\Takusan_no_Code\Dataset\Interim_Dataset\Dataset_CHINA\Anhui_1H_Flood_new"
     et_data_dir = r"E:\Takusan_no_Code\Dataset\Interim_Dataset\Dataset_CHINA\Anhui_1H_ET"
     pet_data_dir = r"E:\Takusan_no_Code\Dataset\Interim_Dataset\Dataset_CHINA\Anhui_1H_PET"
-    output_dir = r"E:\Takusan_no_Code\Dataset\Interim_Dataset\Dataset_CHINA\Anhui_1H"
+    output_dir = r"E:\Takusan_no_Code\Dataset\Interim_Dataset\Dataset_CHINA\Anhui_1H_new"
     # 合并数据
     merge_et_pet_data(flood_data_dir, et_data_dir, pet_data_dir, output_dir)

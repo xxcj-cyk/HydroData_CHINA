@@ -4,7 +4,7 @@
 @Company:            Dalian University of Technology
 @Date:               2025-05-27 17:33:16
 @Last Modified by:   Yikai CHAI
-@Last Modified time: 2025-06-22 12:32:48
+@Last Modified time: 2025-07-05 11:36:48
 """
 
 import os
@@ -64,7 +64,7 @@ def read_flood_data(root_folder):
             column_mapping = {
                 '时间': 'time',
                 '实测流量': 'streamflow_obs',
-                '预报流量': 'streamflow_pred_xaj',
+                '预报合计流量': 'streamflow_pred_xaj',
                 '面雨量': 'P_Anhui'
             }
             df = df.rename(columns=column_mapping)
@@ -126,8 +126,8 @@ def save_as_netcdf(data_dict, output_dir):
 
 if __name__ == "__main__":
     # 设置根文件夹路径
-    root_folder = r"E:\Takusan_no_Code\Dataset\Original_Dataset\Dataset_CHINA\Anhui\Flood_Event_21"
-    output_dir = r"E:\Takusan_no_Code\Dataset\Interim_Dataset\Dataset_CHINA\Anhui_1H_Flood"
+    root_folder = r"E:\Takusan_no_Code\Dataset\Original_Dataset\Dataset_CHINA\Anhui\Flood_Event_21_new"
+    output_dir = r"E:\Takusan_no_Code\Dataset\Interim_Dataset\Dataset_CHINA\Anhui_1H_Flood_new"
     # 读取所有数据
     logging.info("开始读取洪水数据...")
     flood_data = read_flood_data(root_folder)

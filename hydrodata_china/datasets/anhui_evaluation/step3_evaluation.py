@@ -4,7 +4,7 @@
 @Company:            Dalian University of Technology
 @Date:               2025-06-19 18:32:14
 @Last Modified by:   Yikai CHAI
-@Last Modified time: 2025-06-22 16:28:31
+@Last Modified time: 2025-06-30 16:41:52
 """
 
 import os
@@ -12,8 +12,8 @@ import pandas as pd
 
 # 文件夹路径
 filtered_dir = r"E:\Takusan_no_Code\Dataset\Interim_Dataset\Dataset_CHINA\Anhui_FloodEvent_Period"
-flow_dir = r"E:\Takusan_no_Code\Paper\Paper2_Anhui_FloodEvent\Result\Month\Anhui_EnLoss-dPL\anhui21_797_PET_Anhui"
-save_dir = r"E:\Takusan_no_Code\Paper\Paper2_Anhui_FloodEvent\Result\Period\Anhui_EnLoss-dPL\anhui21_797_PET_Anhui"
+flow_dir = r"E:\Takusan_no_Code\Paper\Paper2_Anhui_FloodEvent\Result\Sec1_ModelPerf\Month\Anhui_LSTM\anhui21_797_PET_Anhui\nc2csv_month"
+save_dir = r"E:\Takusan_no_Code\Paper\Paper2_Anhui_FloodEvent\Result\Sec1_ModelPerf\Period\Anhui_LSTM\anhui21_797_PET_Anhui\nc2csv_period"
 
 # 获取所有csv文件名
 filtered_files = [f for f in os.listdir(filtered_dir) if f.endswith('_period.csv')]
