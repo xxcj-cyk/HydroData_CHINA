@@ -4,11 +4,12 @@
 @Company:            Dalian University of Technology
 @Date:               2025-05-27 17:33:16
 @Last Modified by:   Yikai CHAI
-@Last Modified time: 2025-07-05 11:36:48
+@Last Modified time: 2025-07-19 10:13:50
 """
 
 import os
 import pandas as pd
+import numpy as np
 import glob
 import logging
 import re
@@ -98,6 +99,8 @@ def save_as_netcdf(data_dict, output_dir):
     """将数据保存为netCDF格式"""
     os.makedirs(output_dir, exist_ok=True)
     saved_files = 0
+    skipped_files = 0
+    
     for flood_folder, files_data in data_dict.items():
         for file_name, df in files_data.items():
             # 提取站点编码
@@ -106,28 +109,52 @@ def save_as_netcdf(data_dict, output_dir):
                 logging.warning(f"无法从文件名 {file_name} 提取站点编码，跳过该文件")
                 continue
             station_code = station_match.group(1)
+            
             # 提取时间戳
             timestamp_match = re.search(r'_([0-9]+)\.xls', file_name)
             if not timestamp_match:
                 logging.warning(f"无法从文件名 {file_name} 提取时间戳，跳过该文件")
                 continue
             timestamp = timestamp_match.group(1)
+            
+            # 检查数据长度是否超过30天（30天 * 24小时 = 720小时）
+            if len(df) <= 720:  # 720小时 = 30天
+                logging.warning(f"文件 {file_name} 数据不足30天（{len(df)}小时），跳过该文件")
+                skipped_files += 1
+                continue
+            
+            # 创建数据副本
+            df_processed = df.copy()
+            
+            # 添加flood_event列，初始化为NaN
+            df_processed['flood_event'] = np.nan
+            
+            # 30天之后的数据标记为1
+            df_processed.loc[df_processed.index[720:], 'flood_event'] = 1
+            
             # 创建新的文件名
             new_filename = f"Anhui_{station_code}_{timestamp}.nc"
             output_path = os.path.join(output_dir, new_filename)
+            
             # 转换为xarray数据集
-            ds = df.set_index('time').to_xarray()
+            ds = df_processed.set_index('time').to_xarray()
+            
             # 保存为netCDF文件
-            ds.to_netcdf(output_path)
+            ds.to_netcdf(output_path, engine='netcdf4')
             saved_files += 1
-            logging.info(f"已保存: {output_path}")
+            
+            # 统计flood_event标记情况
+            flood_event_count = (df_processed['flood_event'] == 1).sum()
+            logging.info(f"已保存: {output_path} (总数据{len(df_processed)}小时，flood_event=1的数据{flood_event_count}小时)")
+    
+    logging.info(f"跳过了 {skipped_files} 个数据不足30天的文件")
     return saved_files
 
 
 if __name__ == "__main__":
     # 设置根文件夹路径
     root_folder = r"E:\Takusan_no_Code\Dataset\Original_Dataset\Dataset_CHINA\Anhui\Flood_Event_21_new"
-    output_dir = r"E:\Takusan_no_Code\Dataset\Interim_Dataset\Dataset_CHINA\Anhui_1H_Flood_new"
+    output_dir = r"E:\Takusan_no_Code\Dataset\Interim_Dataset\Dataset_CHINA\Anhui_1H_Flood"
     # 读取所有数据
     logging.info("开始读取洪水数据...")
     flood_data = read_flood_data(root_folder)

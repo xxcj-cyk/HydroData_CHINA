@@ -316,27 +316,7 @@ def process_nc_files(input_folder, output_folder):
                     # 创建扩展数组
                     aug_shape = shape.copy()
                     aug_shape[time_dim_idx] = aug_hours
-                    # 对于streamflow变量，使用7月31日23:00:00的值
-                    if var_name == 'streamflow' or var_name == 'streamflow_obs':
-                        # 获取7月31日23:00:00的值
-                        last_july_value = var.isel(time=last_july_idx).values
-                        # 创建填充数组，用7月31日23:00:00的值填充
-                        aug_data = np.zeros(aug_shape, dtype=var.dtype)
-                        # 对于多维数组，需要在时间维度上重复该值
-                        if len(aug_shape) > 1:
-                            for i in range(aug_hours):
-                                idx = [slice(None)] * len(dims)
-                                idx[time_dim_idx] = i
-                                aug_data[tuple(idx)] = last_july_value
-                        else:
-                            # 对于一维数组，直接填充该值
-                            aug_data.fill(last_july_value)
-                    elif var_name == 'P_Anhui' or var_name in ['evaporation', 'temperature_2m', 'potential_evaporation_hourly', 'total_evaporation_hourly', 'total_precipitation_hourly']:
-                        # P_Anhui变量设为0
-                        aug_data = np.zeros(aug_shape, dtype=np.float64)
-                    else:
-                        # 其他变量设为NaN
-                        aug_data = np.full(aug_shape, np.nan, dtype=var.dtype)
+                    aug_data = np.full(aug_shape, np.nan, dtype=var.dtype)
                     aug_ds[var_name] = (dims, aug_data)
                 else:
                     # 对于不依赖时间维度的变量，直接复制
@@ -370,27 +350,7 @@ def process_nc_files(input_folder, output_folder):
                     # 创建扩展数组
                     jul_shape = shape.copy()
                     jul_shape[time_dim_idx] = jul_hours
-                    # 对于streamflow变量，使用8月1日00:00:00的值
-                    if var_name == 'streamflow' or var_name == 'streamflow_obs':
-                        # 获取8月1日00:00:00的值
-                        first_aug_value = var.isel(time=first_aug_idx).values
-                        # 创建填充数组，用8月1日00:00:00的值填充
-                        jul_data = np.zeros(jul_shape, dtype=var.dtype)
-                        # 对于多维数组，需要在时间维度上重复该值
-                        if len(jul_shape) > 1:
-                            for i in range(jul_hours):
-                                idx = [slice(None)] * len(dims)
-                                idx[time_dim_idx] = i
-                                jul_data[tuple(idx)] = first_aug_value
-                        else:
-                            # 对于一维数组，直接填充该值
-                            jul_data.fill(first_aug_value)
-                    elif var_name == 'P_Anhui' or var_name in ['evaporation', 'temperature_2m', 'potential_evaporation_hourly', 'total_evaporation_hourly', 'total_precipitation_hourly']:
-                        # 这些变量都设为0
-                        jul_data = np.zeros(jul_shape, dtype=np.float64)
-                    else:
-                        # 其他变量设为NaN
-                        jul_data = np.full(jul_shape, np.nan, dtype=var.dtype)
+                    jul_data = np.full(jul_shape, np.nan, dtype=var.dtype)
                     jul_ds[var_name] = (dims, jul_data)
                 else:
                     # 对于不依赖时间维度的变量，直接复制

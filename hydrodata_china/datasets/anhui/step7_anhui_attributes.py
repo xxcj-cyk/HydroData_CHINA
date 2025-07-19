@@ -145,7 +145,7 @@ if __name__ == "__main__":
         print("\n匹配结果预览:")
         print(matched_data.head())
         # 保存结果到NetCDF文件
-        output_nc = os.path.join(os.path.dirname(nc_directory_path), "attributes.nc")
+        output_nc = r"E:\Takusan_no_Code\Dataset\Processed_Dataset\Dataset_CHINA\Anhui_1H\attributes.nc"
         create_basin_attributes_nc(matched_data, output_nc)
     else:
         print("未能生成匹配结果")

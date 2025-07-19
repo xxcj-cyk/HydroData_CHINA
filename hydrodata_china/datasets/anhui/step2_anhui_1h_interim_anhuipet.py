@@ -4,7 +4,7 @@
 @Company:            Dalian University of Technology
 @Date:               2025-06-09 11:06:49
 @Last Modified by:   Yikai CHAI
-@Last Modified time: 2025-06-11 11:30:27
+@Last Modified time: 2025-07-19 10:24:00
 """
 
 import os
@@ -216,7 +216,7 @@ def process_evaporation_data(basin_station_mapping, station_data, output_dir, st
             }
         )
         # 保存为NC文件
-        output_file = os.path.join(output_dir, f"{basin_id}_ET.nc")
+        output_file = os.path.join(output_dir, f"{basin_id}_PET.nc")
         ds.to_netcdf(output_file)
         processed_count += 1
         logging.info(f"已保存流域{basin_id}的蒸发数据到{output_file}，共{len(hourly_df)}条记录")
@@ -225,9 +225,9 @@ def process_evaporation_data(basin_station_mapping, station_data, output_dir, st
 
 if __name__ == "__main__":
     # 设置文件路径
-    mapping_file_path = r"E:\Takusan_no_Code\Dataset\Original_Dataset\Dataset_CHINA\Anhui\ET_Station_21\流域蒸发站对应表.xlsx"
-    evaporation_file_path = r"E:\Takusan_no_Code\Dataset\Original_Dataset\Dataset_CHINA\Anhui\ET_Station_21\多年平均月蒸散发.xlsx"
-    output_dir = r"E:\Takusan_no_Code\Dataset\Interim_Dataset\Dataset_CHINA\Anhui_1H_ET"
+    mapping_file_path = r"E:\Takusan_no_Code\Dataset\Original_Dataset\Dataset_CHINA\Anhui\PET_Station_21\流域蒸发站对应表.xlsx"
+    evaporation_file_path = r"E:\Takusan_no_Code\Dataset\Original_Dataset\Dataset_CHINA\Anhui\PET_Station_21\多年平均月蒸散发.xlsx"
+    output_dir = r"E:\Takusan_no_Code\Dataset\Interim_Dataset\Dataset_CHINA\Anhui_1H_anhui-PET"
     # 设置年份范围
     start_year = 1960
     end_year = 2022
