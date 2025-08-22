@@ -4,7 +4,7 @@
 @Company:            Dalian University of Technology
 @Date:               2025-05-29 17:31:00
 @Last Modified by:   Yikai CHAI
-@Last Modified time: 2025-08-22 11:24:13
+@Last Modified time: 2025-08-22 11:30:37
 """
 
 import os
@@ -139,7 +139,7 @@ def merge_csv_files_by_basin(input_folder, output_folder):
 
 
 if __name__ == "__main__":
-    input_folder = r"E:\Takusan_no_Code\Dataset\Interim_Dataset\Dataset_CHINA\Anhui_1H_Flood_processed"
+    input_folder = r"E:\Takusan_no_Code\Dataset\Processed_Dataset\Dataset_CHINA\Anhui_1H_Flood"
     output_folder = r"E:\Takusan_no_Code\Dataset\Processed_Dataset\Dataset_CHINA\Anhui_1H"
     success_basins, failed_basins = merge_csv_files_by_basin(input_folder, output_folder)
     logging.info("处理完成！")
