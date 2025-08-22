@@ -3,8 +3,8 @@
 @Email:					chaiyikai@mail.dlut.edu.cn
 @Company:				Dalian University of Technology
 @Date:					2025-05-29 00:10:23
-@Last Modified by:		Yikai CHAI
-@Last Modified time:	2025-08-21 00:05:55
+@Last Modified by:   Yikai CHAI
+@Last Modified time: 2025-08-22 11:39:05
 """
 
 import pandas as pd
@@ -14,7 +14,7 @@ import xarray as xr
 FLOOD_EVENT_XLSX = r"E:\Takusan_no_Code\Dataset\Original_Dataset\Dataset_CHINA\Anhui\Flood_Event_21\FloodEvent_797.xlsx"
 ATTRIBUTES_CSV = r"E:\Takusan_no_Code\Dataset\Original_Dataset\Dataset_CHINA\Anhui\Attributes_21\attributes.csv"
 OUTPUT_NC = r"E:\Takusan_no_Code\Dataset\Processed_Dataset\Dataset_CHINA\Anhui_1H\attributes.nc"
-OUTPUT_CSV = r"E:\Takusan_no_Code\Dataset\Interim_Dataset\Dataset_CHINA\Anhui_1H\attributes.csv"
+OUTPUT_CSV = r"E:\Takusan_no_Code\Dataset\Processed_Dataset\Dataset_CHINA\Anhui_1H\attributes.csv"
 
 # Read flood events
 flood_df = pd.read_excel(FLOOD_EVENT_XLSX)
