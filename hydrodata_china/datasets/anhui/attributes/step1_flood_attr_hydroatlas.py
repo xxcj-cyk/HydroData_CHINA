@@ -4,7 +4,7 @@
 @Company:				Dalian University of Technology
 @Date:					2025-05-29 00:10:23
 @Last Modified by:   Yikai CHAI
-@Last Modified time: 2025-08-22 11:39:05
+@Last Modified time: 2025-08-22 19:32:39
 """
 
 import pandas as pd
@@ -28,6 +28,8 @@ basin_attr_map = {}
 for _, row in attributes_df.iterrows():
     basin_id = row['basin_id']
     basin_code = basin_id.replace('anhui_', '')
+    # 字段名替换
+    row = row.rename({'area': 'Area', 'pre_mm_syr': 'p_mean'})
     basin_attr_map[basin_code] = row.drop('basin_id')
 
 # Assign attributes to each flood event

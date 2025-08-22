@@ -4,11 +4,12 @@
 @Company:            Dalian University of Technology
 @Date:               2025-08-19 09:26:13
 @Last Modified by:   Yikai CHAI
-@Last Modified time: 2025-08-22 00:58:35
+@Last Modified time: 2025-08-22 17:32:11
 """
 
 
 import os
+import numpy as np
 import pandas as pd
 import geopandas as gpd
 from tqdm import tqdm
@@ -67,7 +68,7 @@ def collect_stations_in_buffer(stations_gdf, basins_gdf, buffer_distance):
 
 
 
-def process_rainfall_for_basin(basin_id, station_codes, rainfall_folder, output_folder, basins_gdf, stations_gdf):
+def process_rainfall_for_basin(basin_id, station_codes, rainfall_folder, output_folder):
     """
     For a given basin, read rainfall data from all associated stations, align time series,
     and calculate areal mean rainfall using the selected interpolation method.
@@ -79,16 +80,15 @@ def process_rainfall_for_basin(basin_id, station_codes, rainfall_folder, output_
         output_folder (str): Output folder for results.
     """
     station_dfs = {}
+    station_coords = {}
     min_tm, max_tm = None, None
-    station_coords = []
-    # 获取当前流域的多边形
-    basin_row = basins_gdf[basins_gdf["Basin_ID"] == basin_id]
-    if basin_row.empty:
-        print(f"Cannot find basin polygon for basin_id: {basin_id}")
-        return
-    basin_polygon = basin_row.geometry.values[0]
+    # 读取站点shp和流域shp
+    stations_gdf = gpd.read_file(STATION_SHP)
+    basins_gdf = gpd.read_file(BASIN_SHP)
+    stations_gdf = stations_gdf.to_crs(PROJECTED_CRS)
+    basins_gdf = basins_gdf.to_crs(PROJECTED_CRS)
+    basin_geom = basins_gdf[basins_gdf["Basin_ID"] == basin_id].geometry.values[0]
     for stcd in station_codes:
-        # Find rainfall file for each station
         matched_files = [f for f in os.listdir(rainfall_folder) if f"{stcd}-1h_processed.xlsx" in f]
         if not matched_files:
             print(f"Rainfall file not found for station {stcd}")
@@ -96,28 +96,23 @@ def process_rainfall_for_basin(basin_id, station_codes, rainfall_folder, output_
         file_path = os.path.join(rainfall_folder, matched_files[0])
         df = pd.read_excel(file_path)
         df["TM"] = pd.to_datetime(df["TM"])
-        # Group by time, average duplicate records
         df = df.groupby("TM", as_index=False)["DRP"].mean()
         station_dfs[stcd] = df.set_index("TM")["DRP"]
         tms = df["TM"]
         # 获取站点坐标
         station_row = stations_gdf[stations_gdf["STCD"] == stcd]
         if not station_row.empty:
-            geom = station_row.geometry.values[0]
-            station_coords.append((geom.x, geom.y))
-        # Track overall time range
+            pt = station_row.geometry.values[0]
+            station_coords[stcd] = (pt.x, pt.y)
         if min_tm is None or tms.min() < min_tm:
             min_tm = tms.min()
         if max_tm is None or tms.max() > max_tm:
             max_tm = tms.max()
 
     if station_dfs and min_tm is not None and max_tm is not None:
-        # Create output folder if needed
         os.makedirs(output_folder, exist_ok=True)
-        # Build full hourly time index based on min_tm and max_tm
         full_tm = pd.date_range(start=min_tm, end=max_tm, freq="h")
         result_df = pd.DataFrame({"TM": full_tm})
-        # Add rainfall series for each station
         for stcd, drp_series in station_dfs.items():
             drp_series.index = pd.to_datetime(drp_series.index)
             result_df[stcd] = result_df["TM"].map(drp_series)
@@ -129,13 +124,15 @@ def process_rainfall_for_basin(basin_id, station_codes, rainfall_folder, output_
             )
         elif RAIN_MEAN_METHOD == "thiessen":
             def thiessen_row(row):
-                vals = []
-                coords = []
-                for idx, val in enumerate(row):
-                    if not pd.isna(val):
-                        vals.append(val)
-                        coords.append(station_coords[idx])
-                return thiessen_polygon_mean(coords, vals, basin_polygon)
+                vals = [val for val in row if not pd.isna(val)]
+                stcds = [col for col, val in zip(row.index, row) if not pd.isna(val)]
+                points = [station_coords[stcd] for stcd in stcds if stcd in station_coords]
+                if len(points) >= 3:
+                    return thiessen_polygon_mean(points, vals, basin_geom)
+                elif len(points) > 0:
+                    return arithmetic_mean(vals)
+                else:
+                    return np.nan
             result_df["P_mean"] = result_df.drop(columns=["TM"]).apply(thiessen_row, axis=1)
         elif RAIN_MEAN_METHOD == "idw":
             result_df["P_mean"] = result_df.drop(columns=["TM"]).apply(
@@ -189,9 +186,7 @@ def main():
             basin_id,
             station_codes,
             RAINFALL_FOLDER,
-            output_folder,
-            basins_gdf,
-            stations_gdf
+            output_folder
         )
 
     # Output all basins and buffer zone station info

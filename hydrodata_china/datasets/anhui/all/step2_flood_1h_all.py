@@ -8,6 +8,7 @@
 
 import os
 import pandas as pd
+import numpy as np
 
 # 场次信息文件
 event_excel = r'E:\Takusan_no_Code\Dataset\Original_Dataset\Dataset_CHINA\Anhui\Flood_Event_21\FloodEvent_797.xlsx'
@@ -23,6 +24,7 @@ df_event = pd.read_excel(event_excel)
 for idx, row in df_event.iterrows():
     event_id = row['FloodEvent_797']
     warmup_start = pd.to_datetime(row['Warmup_Start'])
+    flood_start = pd.to_datetime(row['FloodEvent_Start'])
     flood_end = pd.to_datetime(row['FloodEvent_End'])
     basin_code, event_code = event_id.split('_')
     input_file = os.path.join(input_dir, f'Anhui_{basin_code}_1H.csv')
@@ -31,7 +33,12 @@ for idx, row in df_event.iterrows():
         continue
     df = pd.read_csv(input_file)
     df['time'] = pd.to_datetime(df['time'])
-    df_event_split = df[(df['time'] >= warmup_start) & (df['time'] <= flood_end)]
+    # 只保留 warmup_start 到 flood_end 之间的数据
+    df_event_split = df[(df['time'] >= warmup_start) & (df['time'] <= flood_end)].copy()
+    # 标记洪水事件区间
+    df_event_split['flood_event'] = np.nan
+    mask = (df_event_split['time'] >= flood_start) & (df_event_split['time'] <= flood_end)
+    df_event_split.loc[mask, 'flood_event'] = 1
     out_file = os.path.join(output_dir, f'Anhui_{basin_code}_{event_code}.csv')
     df_event_split.to_csv(out_file, index=False, encoding='utf-8')
     print(f'已保存: {out_file}')

@@ -4,13 +4,12 @@
 @Company:				Dalian University of Technology
 @Date:					2025-08-21 23:00:36
 @Last Modified by:   Yikai CHAI
-@Last Modified time: 2025-08-22 00:14:05
+@Last Modified time: 2025-08-22 18:52:21
 """
 
 import os
 import pandas as pd
 import re
-
 
 # 流量数据文件夹路径
 BASIN_AREAS = {
@@ -41,19 +40,12 @@ BASIN_AREAS = {
 q_folder = r"E:\Takusan_no_Code\Dataset\Original_Dataset\Dataset_CHINA\Anhui\Q_Station_21"
 output_folder = r"E:\Takusan_no_Code\Dataset\Interim_Dataset\Dataset_CHINA\\Anhui_1H_Q"
 
-# 洪水事件文件路径
-flood_event_path = r"E:\Takusan_no_Code\Dataset\Original_Dataset\Dataset_CHINA\Anhui\Flood_Event_21\FloodEvent_797.xlsx"
-# 读取洪水事件表
-flood_event_df = pd.read_excel(flood_event_path)
-flood_event_df["station_code"] = flood_event_df["FloodEvent_797"].apply(lambda x: str(x).split('_')[0])
-
 os.makedirs(output_folder, exist_ok=True)
 
 def get_basin_code(filename):
     # 从文件名中提取流域编码
     match = re.search(r"ST_RIVER_(\d+)_R.*\.xlsx", filename)
     return match.group(1) if match else None
-
 
 def main():
     for q_file in os.listdir(q_folder):
@@ -84,16 +76,6 @@ def main():
                 q_df_main["streamflow_obs_mm"] = q_df_main["Q"] / (area_km2 * 1e6) * 3600 * 1000
             else:
                 q_df_main["streamflow_obs_mm"] = None
-            # 增加洪水事件标记列 flood_event，默认空值（NaN）
-            import numpy as np
-            q_df_main["flood_event"] = np.nan
-            # 查找该站点的所有洪水事件
-            events = flood_event_df[flood_event_df["station_code"] == basin_code]
-            for _, event in events.iterrows():
-                start = pd.to_datetime(event["FloodEvent_Start"])
-                end = pd.to_datetime(event["FloodEvent_End"])
-                mask = (q_df_main["TM"] >= start) & (q_df_main["TM"] <= end)
-                q_df_main.loc[mask, "flood_event"] = 1
             # 保存为 CSV
             q_df_main.rename(columns={"TM": "time", "Q": "streamflow_obs_m3s"}, inplace=True)
             output_path = os.path.join(output_folder, f"Anhui_{basin_code}_Q_Anhui.csv")
