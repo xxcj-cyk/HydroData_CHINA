@@ -4,7 +4,7 @@
 @Company:            Dalian University of Technology
 @Date:               2025-08-19 09:26:13
 @Last Modified by:   Yikai CHAI
-@Last Modified time: 2025-08-22 11:42:41
+@Last Modified time: 2025-08-22 20:12:25
 """
 
 
@@ -12,7 +12,7 @@ import os
 import pandas as pd
 import geopandas as gpd
 from tqdm import tqdm
-from hydrodata_china.settings.rainfall_methods import arithmetic_mean, thiessen_polygon_mean, inverse_distance_weighting
+from hydrodata_china.settings.rainfall_methods import arithmetic_mean, thiessen_polygon_mean
 
 
 # File paths
@@ -23,7 +23,7 @@ OUTPUT_FOLDER_BASE = r"E:\Takusan_no_Code\Dataset\Interim_Dataset\Dataset_CHINA\
 # Parameter settings
 BUFFER_DISTANCE = 2000 # Buffer distance around basin (meters)
 PROJECTED_CRS = "EPSG:32650"
-RAIN_MEAN_METHOD = "arithmetic" # Rainfall interpolation method: "arithmetic", "thiessen", or "idw"
+RAIN_MEAN_METHOD = "arithmetic" # Rainfall interpolation method: "arithmetic" or "thiessen"
 
 
 def collect_stations_in_buffer(stations_gdf, basins_gdf, buffer_distance):
@@ -119,10 +119,6 @@ def process_rainfall_for_basin(basin_id, station_codes, rainfall_folder, output_
             result_df["P_mean"] = result_df.drop(columns=["TM"]).apply(
                 lambda row: thiessen_polygon_mean([val for val in row if not pd.isna(val)]), axis=1
             )
-        elif RAIN_MEAN_METHOD == "idw":
-            result_df["P_mean"] = result_df.drop(columns=["TM"]).apply(
-                lambda row: inverse_distance_weighting([val for val in row if not pd.isna(val)]), axis=1
-            )
         else:
             raise ValueError(f"Unknown rainfall interpolation method: {RAIN_MEAN_METHOD}")
 
@@ -154,8 +150,8 @@ def main():
     basins_gdf = basins_gdf.to_crs(PROJECTED_CRS)
     print("---GIS data loaded, start processing...---")
 
-    # Set output folder according to method
-    if RAIN_MEAN_METHOD in ["arithmetic", "thiessen", "idw"]:
+    # 设置输出文件夹
+    if RAIN_MEAN_METHOD in ["arithmetic", "thiessen"]:
         output_folder = os.path.join(OUTPUT_FOLDER_BASE, RAIN_MEAN_METHOD)
         os.makedirs(output_folder, exist_ok=True)
     else:

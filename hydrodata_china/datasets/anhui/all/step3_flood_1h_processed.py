@@ -4,7 +4,7 @@
 @Company:				Dalian University of Technology
 @Date:					2025-08-22 10:19:44
 @Last Modified by:   Yikai CHAI
-@Last Modified time: 2025-08-22 19:26:28
+@Last Modified time: 2025-08-22 20:37:21
 """
 
 import os
@@ -135,8 +135,7 @@ def process_csv_files(input_folder, output_folder):
         event_id = filename.split('.')[0]
         try:
             header, data = read_csv_data(csv_file)
-            # 假定第一列为时间
-            times = [row[0] for row in data]
+            times = [row[1] for row in data]
             original_length = len(times)
             target_length = 744
             # 记录原始时间序列
@@ -160,7 +159,7 @@ def process_csv_files(input_folder, output_folder):
                 new_times.reverse()
                 pad_rows = [first_row.copy() for _ in range(padding_length)]
                 for i, row in enumerate(pad_rows):
-                    row[0] = new_times[i]
+                    row[1] = new_times[i]
                 data = pad_rows + data
                 times = new_times + times
                 original_times = new_times + original_times
@@ -174,7 +173,7 @@ def process_csv_files(input_folder, output_folder):
                 start_time = np.datetime64('2024-07-01T00:00:00')
                 new_times = [str(start_time + np.timedelta64(i, 'h')).replace('T', ' ') for i in range(target_length)]
                 for i, row in enumerate(data):
-                    row[0] = new_times[i]
+                    row[1] = new_times[i]
                     # time_true为原始时间（补齐后）
                     if len(row) == len(header)-1:
                         row.append(original_times[i].replace('T', ' '))
@@ -182,21 +181,21 @@ def process_csv_files(input_folder, output_folder):
                 aug_hours = 31 * 24
                 aug_start_time = np.datetime64('2024-08-01T00:00:00')
                 aug_times = [str(aug_start_time + np.timedelta64(i, 'h')).replace('T', ' ') for i in range(aug_hours)]
-                aug_rows = [[t] + ["" for _ in header[1:-1]] + [""] for t in aug_times]
+                aug_rows = [[row[0], t] + ["" for _ in header[2:-1]] + [""] for t in aug_times]
                 new_data = data + aug_rows
             elif event_id in all_val_events:
                 # 验证集时间范围：2024-08-01 ~ 2024-08-31
                 start_time = np.datetime64('2024-08-01T00:00:00')
                 new_times = [str(start_time + np.timedelta64(i, 'h')).replace('T', ' ') for i in range(target_length)]
                 for i, row in enumerate(data):
-                    row[0] = new_times[i]
+                    row[1] = new_times[i]
                     if len(row) == len(header)-1:
                         row.append(original_times[i].replace('T', ' '))
                 # 补充7月
                 jul_hours = 31 * 24
                 jul_start_time = np.datetime64('2024-07-01T00:00:00')
                 jul_times = [str(jul_start_time + np.timedelta64(i, 'h')).replace('T', ' ') for i in range(jul_hours)]
-                jul_rows = [[t] + ["" for _ in header[1:-1]] + [""] for t in jul_times]
+                jul_rows = [[row[0], t] + ["" for _ in header[2:-1]] + [""] for t in jul_times]
                 new_data = jul_rows + data
             else:
                 # 非训练/验证集，保持原始时间

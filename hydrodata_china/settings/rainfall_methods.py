@@ -3,8 +3,8 @@
 @Email:              chaiyikai@mail.dlut.edu.cn
 @Company:            Dalian University of Technology
 @Date:               2025-08-18 10:44:51
-@Last Modified by:  Yikai CHAI
-@Last Modified time:2025-08-19 11:58:42
+@Last Modified by:   Yikai CHAI
+@Last Modified time: 2025-08-22 20:02:23
 """
 
 import numpy as np
@@ -79,48 +79,3 @@ def thiessen_polygon_mean(station_points, rainfall_values, basin_polygon):
         return weighted_sum / total_area
     else:
         return np.nan
-
-
-def inverse_distance_weighting(station_points, rainfall_values, grid_points, p=2):
-    """
-    使用反距离权重法(IDW)计算面平均降雨量
-    
-    参数:
-        station_points: 雨量站点坐标列表，格式为[(x1,y1), (x2,y2), ...]
-        rainfall_values: 对应站点的降雨量列表
-        grid_points: 需要计算降雨量的网格点坐标列表
-        p: IDW的幂参数，默认为2
-        
-    返回:
-        网格点的估计降雨量列表
-    """
-    # 有效数据筛选
-    valid_indices = [i for i, val in enumerate(rainfall_values) if not pd.isna(val)]
-    if not valid_indices:
-        return np.nan
-    # 筛选有效站点和降雨量
-    station_points_valid = [station_points[i] for i in valid_indices]
-    rainfall_values_valid = [rainfall_values[i] for i in valid_indices]
-    # 确保输入数据是numpy数组
-    station_points_valid = np.array(station_points_valid)
-    rainfall_values_valid = np.array(rainfall_values_valid)
-    grid_points = np.array(grid_points)
-    # 存储每个网格点的估计降雨量
-    estimated_rainfall = np.zeros(len(grid_points))
-    # 对每个网格点进行IDW插值
-    for i, point in enumerate(grid_points):
-        # 计算网格点到每个站点的距离
-        distances = np.sqrt(np.sum((station_points_valid - point)**2, axis=1))
-        # 处理距离为0的情况（网格点与站点重合）
-        if np.any(distances == 0):
-            # 如果有重合点，直接使用该点的降雨值
-            idx = np.where(distances == 0)[0][0]
-            estimated_rainfall[i] = rainfall_values_valid[idx]
-        else:
-            # 计算权重
-            weights = 1.0 / (distances ** p)
-            weights = weights / np.sum(weights)  # 归一化权重
-            # 计算加权平均
-            estimated_rainfall[i] = np.sum(weights * rainfall_values_valid)
-    # 返回所有网格点的平均值作为面平均降雨量
-    return np.mean(estimated_rainfall)

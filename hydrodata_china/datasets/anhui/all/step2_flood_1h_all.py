@@ -39,6 +39,7 @@ for idx, row in df_event.iterrows():
     df_event_split['flood_event'] = np.nan
     mask = (df_event_split['time'] >= flood_start) & (df_event_split['time'] <= flood_end)
     df_event_split.loc[mask, 'flood_event'] = 1
+    df_event_split.insert(0, 'basin', f'Anhui_{basin_code}_{event_code}')
     out_file = os.path.join(output_dir, f'Anhui_{basin_code}_{event_code}.csv')
     df_event_split.to_csv(out_file, index=False, encoding='utf-8')
     print(f'已保存: {out_file}')

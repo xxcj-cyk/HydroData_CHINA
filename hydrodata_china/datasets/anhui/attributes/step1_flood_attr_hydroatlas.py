@@ -4,7 +4,7 @@
 @Company:				Dalian University of Technology
 @Date:					2025-05-29 00:10:23
 @Last Modified by:   Yikai CHAI
-@Last Modified time: 2025-08-22 19:32:39
+@Last Modified time: 2025-08-22 20:58:08
 """
 
 import pandas as pd
@@ -44,6 +44,12 @@ for event in flood_events:
         print(f"Warning: No attributes found for {event}")
 
 result_df = pd.DataFrame(records)
+result_df.rename(columns={'FloodEvent_797': 'basin'}, inplace=True)
+result_df['basin'] = result_df['basin'].apply(lambda x: 'Anhui_' + x)
+
+# basin列移到第一列
+cols = ['basin'] + [col for col in result_df.columns if col != 'basin']
+result_df = result_df[cols]
 
 # Save as CSV
 result_df.to_csv(OUTPUT_CSV, index=False)
@@ -51,11 +57,11 @@ print(f"CSV saved: {OUTPUT_CSV}")
 
 # Save as NetCDF
 ds = xr.Dataset()
-ds.coords['FloodEvent_797'] = result_df['FloodEvent_797'].values
+ds.coords['basin'] = result_df['basin'].values
 for col in result_df.columns:
-    if col != 'FloodEvent_797':
+    if col != 'basin':
         values = pd.to_numeric(result_df[col], errors='coerce').values
-        ds[col] = xr.DataArray(values, coords=[ds['FloodEvent_797']], dims=['FloodEvent_797'])
+        ds[col] = xr.DataArray(values, coords=[ds['basin']], dims=['basin'])
         ds[col].attrs['long_name'] = col
         ds[col].attrs['units'] = '-'
 ds.attrs['title'] = 'Anhui FloodEvent Attributes'

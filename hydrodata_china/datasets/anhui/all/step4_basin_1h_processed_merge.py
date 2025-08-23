@@ -4,7 +4,7 @@
 @Company:            Dalian University of Technology
 @Date:               2025-05-29 17:31:00
 @Last Modified by:   Yikai CHAI
-@Last Modified time: 2025-08-22 11:30:37
+@Last Modified time: 2025-08-22 20:51:06
 """
 
 import os
@@ -93,6 +93,16 @@ def merge_csv_files_by_basin(input_folder, output_folder):
             'temperature_2m_era5land': 't_era5land',
         }
         merged_df = merged_df.rename(columns=rename_dict)
+
+        # 新增：类型转换
+        if 'basin' in merged_df.columns:
+            merged_df['basin'] = merged_df['basin'].astype('object')
+        if 'time' in merged_df.columns:
+            merged_df['time'] = pd.to_datetime(merged_df['time'], format='%Y-%m-%d %H:%M:%S', errors='coerce')
+            merged_df['time'] = merged_df['time'].dt.floor('h')  # 保证小时尺度
+        if 'time_true' in merged_df.columns:
+            merged_df['time_true'] = merged_df['time_true'].astype('object')
+
         if event_ids:
             event_ids.sort(key=lambda x: x.split('_')[-1] if len(x.split('_')) >= 3 else '')
             first_event_id = event_ids[0]
@@ -104,14 +114,22 @@ def merge_csv_files_by_basin(input_folder, output_folder):
         output_file_csv = os.path.join(output_folder, output_filename + ".csv")
         merged_df.to_csv(output_file_csv, index=False)
         logging.info(f"已将流域 {basin_id} 的 {len(files)} 个文件合并为 {output_file_csv}")
-        # 保存nc（已重命名字段）
-        ds = xr.Dataset.from_dataframe(merged_df)
+
+        # 新增：以 basin 和 time 为维度保存 nc 文件
+        if 'basin' in merged_df.columns and 'time' in merged_df.columns:
+            ds = xr.Dataset.from_dataframe(
+                merged_df.set_index(['basin', 'time'])
+            )
+        else:
+            ds = xr.Dataset.from_dataframe(merged_df)
+
+        # 设置变量属性
         if 'streamflow_obs_m3s' in ds:
             ds['streamflow_obs_m3s'].attrs['units'] = 'm3/s'
         if 'streamflow' in ds:
             ds['streamflow'].attrs['units'] = 'mm/h'
-        if 'p_Anhui' in ds:
-            ds['p_Anhui'].attrs['units'] = 'mm/h'
+        if 'p_anhui' in ds:
+            ds['p_anhui'].attrs['units'] = 'mm/h'
         if 'pet_anhui' in ds:
             ds['pet_anhui'].attrs['units'] = 'mm/h'
         if 'p_era5land' in ds:
