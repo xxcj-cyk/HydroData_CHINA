@@ -11,11 +11,11 @@ import pandas as pd
 import numpy as np
 
 # 场次信息文件
-event_excel = r'E:\Takusan_no_Code\Dataset\Original_Dataset\Dataset_CHINA\Anhui\Flood_Event_21\FloodEvent_797.xlsx'
+event_excel = r"E:\Takusan_no_Code\Dataset\Original_Dataset\Dataset_CHINA\Anhui\Flood_Event_21\FloodEvent20_705.xlsx"
 # 1H数据文件夹
 input_dir = r'E:\Takusan_no_Code\Dataset\Interim_Dataset\Dataset_CHINA\Anhui_1H'
 # 输出文件夹
-output_dir = r'E:\Takusan_no_Code\Dataset\Interim_Dataset\Dataset_CHINA\Anhui_1H_Flood'
+output_dir = r'E:\Takusan_no_Code\Dataset\Interim_Dataset\Dataset_CHINA\Anhui_1H_Flood_Selected'
 os.makedirs(output_dir, exist_ok=True)
 
 # 读取场次信息

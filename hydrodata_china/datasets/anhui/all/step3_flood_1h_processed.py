@@ -4,7 +4,7 @@
 @Company:				Dalian University of Technology
 @Date:					2025-08-22 10:19:44
 @Last Modified by:   Yikai CHAI
-@Last Modified time: 2025-08-22 20:37:21
+@Last Modified time: 2025-08-23 22:16:15
 """
 
 import os
@@ -220,8 +220,8 @@ def process_csv_files(input_folder, output_folder):
             print(f"  {i+1}. {error_file['filename']}: {error_file['error']}")
 
 if __name__ == "__main__":
-    data_folder = r"E:\Takusan_no_Code\Dataset\Interim_Dataset\Dataset_CHINA\Anhui_1H_Flood"
-    output_folder = r"E:\Takusan_no_Code\Dataset\Processed_Dataset\Dataset_CHINA\Anhui_1H_Flood"
+    data_folder = r"E:\Takusan_no_Code\Dataset\Interim_Dataset\Dataset_CHINA\Anhui_1H_Flood_Selected"
+    output_folder = r"E:\Takusan_no_Code\Dataset\Processed_Dataset\Dataset_CHINA\Anhui_1H_Flood_Selected"
     print("=" * 50)
     print("开始划分训练集和验证集...")
     print("=" * 50)
