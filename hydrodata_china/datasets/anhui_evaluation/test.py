@@ -14,20 +14,20 @@ import xarray as xr
 from pathlib import Path
 
 def nash_sutcliffe(obs, sim):
-    """计算纳什效率系数 (Nash-Sutcliffe Efficiency)"""
-    # 去除缺失值
+    """Calculate Nash-Sutcliffe Efficiency coefficient"""
+    # Remove missing values
     idx = ~(np.isnan(obs) | np.isnan(sim))
     obs = obs[idx]
     sim = sim[idx]
     
-    # 计算NSE
+    # Calculate NSE
     if len(obs) == 0:
         return np.nan
     return 1 - np.sum((obs - sim) ** 2) / np.sum((obs - np.mean(obs)) ** 2)
 
 def peak_flow_error(obs, sim):
-    """计算峰值流量误差 (Peak Flow Error)"""
-    # 去除缺失值
+    """Calculate Peak Flow Error"""
+    # Remove missing values
     idx = ~(np.isnan(obs) | np.isnan(sim))
     obs = obs[idx]
     sim = sim[idx]
@@ -35,18 +35,18 @@ def peak_flow_error(obs, sim):
     if len(obs) == 0:
         return np.nan
     
-    # 计算峰值流量误差 (PFE) = (峰值预测 - 峰值观测) / 峰值观测
+    # Calculate Peak Flow Error (PFE) = (peak_predicted - peak_observed) / peak_observed
     peak_obs = np.max(obs)
     peak_sim = np.max(sim)
     
     if peak_obs == 0:
         return np.nan
     
-    return (peak_sim - peak_obs) / peak_obs * 100  # 转为百分比
+    return (peak_sim - peak_obs) / peak_obs * 100  # Convert to percentage
 
 def evaluate_nc_files(directory):
-    """评估目录中的NC文件并计算指标"""
-    # 获取目录中的所有NC文件
+    """Evaluate NC files in directory and calculate metrics"""
+    # Get all NC files in directory
     directory = Path(directory)
     nc_files = list(directory.glob("*.nc"))
     
@@ -54,28 +54,28 @@ def evaluate_nc_files(directory):
     
     for file_path in nc_files:
         try:
-            # 打开NC文件
+            # Open NC file
             ds = xr.open_dataset(file_path)
             
-            # 检查是否包含所需变量
+            # Check if required variables are present
             if 'streamflow_obs' not in ds or 'streamflow_pred_xaj' not in ds:
-                print(f"文件 {file_path.name} 缺少必要的变量")
+                print(f"File {file_path.name} is missing required variables")
                 continue
                 
-            # 获取数据
+            # Get data
             obs = ds.streamflow_obs.values
             pred = ds.streamflow_pred_xaj.values
             
-            # 计算指标
+            # Calculate metrics
             nse = nash_sutcliffe(obs, pred)
             pfe = peak_flow_error(obs, pred)
             
-            # 获取流域信息（如果有）
+            # Get basin information (if available)
             basin_id = file_path.stem
             if 'basin' in ds.dims:
                 basin_id = str(ds.basin.values)
             
-            # 添加结果
+            # Add results
             results.append({
                 'file': file_path.name,
                 'basin_id': basin_id,
@@ -86,25 +86,25 @@ def evaluate_nc_files(directory):
             ds.close()
             
         except Exception as e:
-            print(f"处理文件 {file_path.name} 时出错: {e}")
+            print(f"Error processing file {file_path.name}: {e}")
     
     return results
 
 def main():
-    # 设置数据目录
+    # Set data directory
     data_dir = r"E:\Takusan_no_Code\Dataset\Interim_Dataset\Dataset_CHINA\Anhui_1H_new"
     
-    # 评估文件
+    # Evaluate files
     results = evaluate_nc_files(data_dir)
     
-    # 创建DataFrame并保存为CSV
+    # Create DataFrame and save as CSV
     if results:
         df = pd.DataFrame(results)
         output_path = os.path.join(data_dir, "evaluation_results.csv")
         df.to_csv(output_path, index=False)
-        print(f"评估结果已保存至: {output_path}")
+        print(f"Evaluation results saved to: {output_path}")
     else:
-        print("没有找到有效的评估结果")
+        print("No valid evaluation results found")
 
 if __name__ == "__main__":
     main()

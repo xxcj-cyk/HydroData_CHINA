@@ -13,91 +13,91 @@ import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
 
-# 设置中文字体支持
+# Set Chinese font support
 try:
-    plt.rcParams['font.sans-serif'] = ['SimHei']  # 用来正常显示中文标签
-    plt.rcParams['axes.unicode_minus'] = False  # 用来正常显示负号
+    plt.rcParams['font.sans-serif'] = ['SimHei']  # For displaying Chinese labels
+    plt.rcParams['axes.unicode_minus'] = False  # For displaying minus signs
 except:
-    print("警告: 无法设置中文字体，图表中文可能无法正确显示")
+    print("Warning: Unable to set Chinese font, Chinese text in charts may not display correctly")
 
 def plot_overall_metrics(df, output_dir):
     """
-    绘制总体NSE和PFE的箱型图
+    Plot boxplots for overall NSE and PFE
     """
-    # 创建两个子图
+    # Create two subplots
     fig, axes = plt.subplots(2, 1, figsize=(10, 8))
     
-    # NSE箱型图
+    # NSE boxplot
     sns.boxplot(y=df['nse'], ax=axes[0])
-    axes[0].set_title('总体NSE分布', fontsize=16)
+    axes[0].set_title('Overall NSE Distribution', fontsize=16)
     axes[0].set_ylabel('NSE', fontsize=14)
     axes[0].grid(True, linestyle='--', alpha=0.7)
     axes[0].axhline(y=0, color='r', linestyle='-', alpha=0.3)
-    # 设置NSE的y轴范围为0到1
+    # Set NSE y-axis range from 0 to 1
     axes[0].set_ylim(0, 1)
     
-    # PFE箱型图
+    # PFE boxplot
     sns.boxplot(y=df['pfe'], ax=axes[1])
-    axes[1].set_title('总体PFE分布', fontsize=16)
+    axes[1].set_title('Overall PFE Distribution', fontsize=16)
     axes[1].set_ylabel('PFE (%)', fontsize=14)
     axes[1].grid(True, linestyle='--', alpha=0.7)
     axes[1].axhline(y=0, color='r', linestyle='-', alpha=0.3)
-    # 设置PFE的y轴范围为-100到100
+    # Set PFE y-axis range from -100 to 100
     axes[1].set_ylim(-100, 100)
     
-    # 保存图片
+    # Save figure
     plt.tight_layout()
     output_file = os.path.join(output_dir, 'overall_metrics_boxplot.png')
     plt.savefig(output_file, dpi=300)
-    print(f"总体指标箱型图已保存至: {output_file}")
+    print(f"Overall metrics boxplot saved to: {output_file}")
     plt.close()
 
 def plot_basin_metrics(df, output_dir):
     """
-    绘制各流域NSE和PFE的箱型图
+    Plot boxplots for NSE and PFE by basin
     """
-    # 创建两个子图
+    # Create two subplots
     fig, axes = plt.subplots(2, 1, figsize=(14, 12))
     
-    # NSE箱型图 (按流域分组)
+    # NSE boxplot (grouped by basin)
     sns.boxplot(x='basin_short_id', y='nse', data=df, ax=axes[0])
-    axes[0].set_title('各流域NSE分布', fontsize=16)
-    axes[0].set_xlabel('流域ID', fontsize=14)
+    axes[0].set_title('NSE Distribution by Basin', fontsize=16)
+    axes[0].set_xlabel('Basin ID', fontsize=14)
     axes[0].set_ylabel('NSE', fontsize=14)
     axes[0].grid(True, linestyle='--', alpha=0.7)
     axes[0].axhline(y=0, color='r', linestyle='-', alpha=0.3)
-    # 设置NSE的y轴范围为0到1
+    # Set NSE y-axis range from 0 to 1
     axes[0].set_ylim(0, 1)
-    # 旋转x轴标签以防重叠
+    # Rotate x-axis labels to prevent overlap
     axes[0].tick_params(axis='x', rotation=90)
     
-    # PFE箱型图 (按流域分组)
+    # PFE boxplot (grouped by basin)
     sns.boxplot(x='basin_short_id', y='pfe', data=df, ax=axes[1])
-    axes[1].set_title('各流域PFE分布', fontsize=16)
-    axes[1].set_xlabel('流域ID', fontsize=14)
+    axes[1].set_title('PFE Distribution by Basin', fontsize=16)
+    axes[1].set_xlabel('Basin ID', fontsize=14)
     axes[1].set_ylabel('PFE (%)', fontsize=14)
     axes[1].grid(True, linestyle='--', alpha=0.7)
     axes[1].axhline(y=0, color='r', linestyle='-', alpha=0.3)
-    # 设置PFE的y轴范围为-100到100
+    # Set PFE y-axis range from -100 to 100
     axes[1].set_ylim(-100, 100)
-    # 旋转x轴标签以防重叠
+    # Rotate x-axis labels to prevent overlap
     axes[1].tick_params(axis='x', rotation=90)
     
-    # 保存图片
+    # Save figure
     plt.tight_layout()
     output_file = os.path.join(output_dir, 'basin_metrics_boxplot.png')
     plt.savefig(output_file, dpi=300)
-    print(f"各流域指标箱型图已保存至: {output_file}")
+    print(f"Basin metrics boxplot saved to: {output_file}")
     plt.close()
 
 def plot_basin_metrics_facet(df, output_dir):
     """
-    使用FacetGrid绘制各流域NSE和PFE的箱型图
+    Plot boxplots for NSE and PFE by basin using FacetGrid
     """
-    # 提取不同的流域ID
+    # Extract different basin IDs
     basin_ids = df['basin_short_id'].unique()
     
-    # 创建长格式的数据用于facet绘图
+    # Create long-format data for facet plotting
     nse_data = []
     pfe_data = []
     
@@ -114,81 +114,81 @@ def plot_basin_metrics_facet(df, output_dir):
             'values': basin_df['pfe'].tolist()
         })
     
-    # 转换为DataFrame
+    # Convert to DataFrame
     nse_df = pd.DataFrame([(d['basin_id'], val) for d in nse_data for val in d['values']], 
                           columns=['basin_id', 'NSE'])
     pfe_df = pd.DataFrame([(d['basin_id'], val) for d in pfe_data for val in d['values']], 
                           columns=['basin_id', 'PFE'])
     
-    # 设置画布
+    # Set canvas
     plt.figure(figsize=(16, 12))
     
-    # 绘制NSE和PFE的箱型图
+    # Plot NSE and PFE boxplots
     plt.subplot(2, 1, 1)
     sns.boxplot(x='basin_id', y='NSE', data=nse_df)
-    plt.title('各流域NSE分布', fontsize=16)
-    plt.xlabel('流域ID', fontsize=14)
+    plt.title('NSE Distribution by Basin', fontsize=16)
+    plt.xlabel('Basin ID', fontsize=14)
     plt.ylabel('NSE', fontsize=14)
     plt.grid(True, linestyle='--', alpha=0.7)
     plt.axhline(y=0, color='r', linestyle='-', alpha=0.3)
-    plt.ylim(0, 1)  # 设置NSE的y轴范围为0到1
+    plt.ylim(0, 1)  # Set NSE y-axis range from 0 to 1
     plt.xticks(rotation=90)
     
     plt.subplot(2, 1, 2)
     sns.boxplot(x='basin_id', y='PFE', data=pfe_df)
-    plt.title('各流域PFE分布', fontsize=16)
-    plt.xlabel('流域ID', fontsize=14)
+    plt.title('PFE Distribution by Basin', fontsize=16)
+    plt.xlabel('Basin ID', fontsize=14)
     plt.ylabel('PFE (%)', fontsize=14)
     plt.grid(True, linestyle='--', alpha=0.7)
     plt.axhline(y=0, color='r', linestyle='-', alpha=0.3)
-    plt.ylim(-100, 100)  # 设置PFE的y轴范围为-100到100
+    plt.ylim(-100, 100)  # Set PFE y-axis range from -100 to 100
     plt.xticks(rotation=90)
     
-    # 保存图片
+    # Save figure
     plt.tight_layout()
     output_file = os.path.join(output_dir, 'basin_metrics_facet.png')
     plt.savefig(output_file, dpi=300)
-    print(f"各流域指标FacetGrid图已保存至: {output_file}")
+    print(f"Basin metrics FacetGrid plot saved to: {output_file}")
     plt.close()
 
 def main():
-    # 设置文件路径
+    # Set file path
     csv_file = r"e:\Takusan_no_Code\Dataset\Interim_Dataset\Dataset_CHINA\Anhui_1H_7\evaluation_results.csv"
     output_dir = os.path.dirname(csv_file)
     
-    # 确保输出目录存在
+    # Ensure output directory exists
     os.makedirs(output_dir, exist_ok=True)
     
-    # 读取CSV文件
+    # Read CSV file
     df = pd.read_csv(csv_file)
-    print(f"成功读取数据，共 {len(df)} 条记录")
+    print(f"Successfully read data, total {len(df)} records")
     
-    # 从完整的basin_id中提取实际的流域编号
+    # Extract actual basin number from full basin_id
     df['basin_short_id'] = df['basin_id'].str.extract(r'Anhui_(\d+)_')
     
-    # 提取不同的流域
+    # Extract different basins
     unique_basins = df['basin_short_id'].unique()
-    print(f"数据中包含 {len(unique_basins)} 个不同的流域: {unique_basins}")
+    print(f"Data contains {len(unique_basins)} different basins: {unique_basins}")
     
-    # 绘制总体NSE和PFE的箱型图
+    # Plot overall NSE and PFE boxplots
     plot_overall_metrics(df, output_dir)
     
-    # 绘制各流域NSE和PFE的箱型图
+    # Plot NSE and PFE boxplots by basin
     plot_basin_metrics(df, output_dir)
     
-    # 使用FacetGrid绘制各流域NSE和PFE的箱型图
+    # Plot NSE and PFE boxplots by basin using FacetGrid
     plot_basin_metrics_facet(df, output_dir)
     
-    # 计算各流域的指标统计信息
+    # Calculate metric statistics by basin
     basin_stats = df.groupby('basin_short_id').agg({
         'nse': ['mean', 'std', 'min', 'max', 'median'],
         'pfe': ['mean', 'std', 'min', 'max', 'median']
     })
     
-    # 保存统计结果到CSV
+    # Save statistics to CSV
     stats_file = os.path.join(output_dir, 'basin_metrics_stats.csv')
     basin_stats.to_csv(stats_file)
-    print(f"各流域指标统计信息已保存至: {stats_file}")
+    print(f"Basin metrics statistics saved to: {stats_file}")
 
 if __name__ == "__main__":
     main()

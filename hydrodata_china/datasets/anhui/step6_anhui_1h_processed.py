@@ -21,156 +21,156 @@ warnings.filterwarnings("ignore", message="invalid value encountered in cast")
 
 def identify_train_val_sets(folder_path, train_ratio=0.8, min_validation_samples=2):
     """
-    识别每个流域的训练集和验证集场次
+    Identify training and validation sets for each basin
     
-    根据指定的比例将每个流域的数据划分为训练集和验证集。
-    默认采用时间顺序划分，较早的场次用于训练，较新的场次用于验证。
+    Divide data for each basin into training and validation sets according to the specified ratio.
+    By default, time-ordered division is used, with earlier events used for training and newer events for validation.
     
-    参数:
-        folder_path (str): 原始nc文件所在文件夹路径
-        train_ratio (float): 训练集占总数据的比例 (默认0.8，即4:1)
-        min_validation_samples (int): 验证集最少包含的样本数 (默认2个)
+    Parameters:
+        folder_path (str): Path to folder containing original nc files
+        train_ratio (float): Ratio of training set to total data (default 0.8, i.e., 4:1)
+        min_validation_samples (int): Minimum number of samples in validation set (default 2)
     
-    返回:
-        tuple: 包含两个字典:
-            - train_sets (dict): 键为流域ID，值为训练集场次列表
-            - val_sets (dict): 键为流域ID，值为验证集场次列表
+    Returns:
+        tuple: Contains two dictionaries:
+            - train_sets (dict): Keys are basin IDs, values are lists of training event IDs
+            - val_sets (dict): Keys are basin IDs, values are lists of validation event IDs
     """
-    # 获取所有nc文件
+    # Get all nc files
     nc_files = glob.glob(os.path.join(folder_path, "*.nc"))
     if not nc_files:
-        print(f"错误: 在 {folder_path} 中未找到任何nc文件")
+        print(f"Error: No nc files found in {folder_path}")
         return {}, {}
-    # 通过文件名提取流域信息
+    # Extract basin information from filenames
     basin_files = {}
     for nc_file in nc_files:
         filename = os.path.basename(nc_file)
-        # 从文件名中提取流域ID
+        # Extract basin ID from filename
         parts = filename.split('_')
         if len(parts) >= 2:
-            # 提取流域ID (如 50406910)
+            # Extract basin ID (e.g., 50406910)
             basin_id = parts[1]
-            # 验证 basin_id 是否是有效的流域标识
+            # Verify if basin_id is a valid basin identifier
             if basin_id.isdigit():
                 if basin_id not in basin_files:
                     basin_files[basin_id] = []
                 basin_files[basin_id].append(nc_file)
             else:
-                print(f"警告: 从文件名 {filename} 中提取的流域ID {basin_id} 不是有效的数字标识")
+                print(f"Warning: Basin ID {basin_id} extracted from filename {filename} is not a valid numeric identifier")
         else:
-            print(f"警告: 文件名 {filename} 格式不符合预期，无法提取流域ID")
-    # 打印找到的流域信息
-    print(f"\n找到 {len(basin_files)} 个流域:")
+            print(f"Warning: Filename {filename} format does not meet expectations, cannot extract basin ID")
+    # Print found basin information
+    print(f"\nFound {len(basin_files)} basins:")
     for basin_id, files in basin_files.items():
-        print(f"  - 流域 {basin_id}: {len(files)} 个文件")
-    # 为每个流域划分训练集和验证集
+        print(f"  - Basin {basin_id}: {len(files)} files")
+    # Divide training and validation sets for each basin
     train_sets = {}
     val_sets = {}
     for basin_id, files in basin_files.items():
         if not files:
             continue 
-        # 按时间排序文件（假设文件名中包含日期信息）
+        # Sort files by time (assuming filenames contain date information)
         files.sort(key=lambda x: os.path.basename(x).split('_')[2].split('.')[0])
-        # 计算训练集和验证集数量
+        # Calculate training and validation set counts
         total_count = len(files)
         val_count = max(min_validation_samples, int(total_count * (1 - train_ratio)))
         train_count = total_count - val_count
-        # 确保有足够的数据进行划分
+        # Ensure there is enough data for division
         if train_count <= 0:
-            print(f"警告: 流域 {basin_id} 的场次数 ({total_count}) 不足以进行划分，至少需要 {min_validation_samples+1} 个场次")
+            print(f"Warning: Basin {basin_id} has insufficient events ({total_count}) for division, at least {min_validation_samples+1} events are needed")
             continue 
-        # 划分训练集和验证集（较新的场次为验证集）
+        # Divide training and validation sets (newer events are validation set)
         train_files = files[:train_count]
         val_files = files[train_count:]
-        # 提取文件名（不含路径和扩展名）作为场次标识
+        # Extract filenames (without path and extension) as event identifiers
         train_sets[basin_id] = [os.path.basename(f).split('.')[0] for f in train_files]
         val_sets[basin_id] = [os.path.basename(f).split('.')[0] for f in val_files]
-        print(f"\n流域 {basin_id} 划分结果:")
-        print(f"  - 总场次数: {total_count}")
-        print(f"  - 训练集: {train_count} 场次")
-        print(f"  - 验证集: {val_count} 场次")
+        print(f"\nBasin {basin_id} division results:")
+        print(f"  - Total events: {total_count}")
+        print(f"  - Training set: {train_count} events")
+        print(f"  - Validation set: {val_count} events")
     return train_sets, val_sets
 
 
 def export_sets_to_csv(train_sets, val_sets, output_folder):
     """
-    将训练集和验证集的ID导出到CSV文件
+    Export training and validation set IDs to CSV files
     
-    参数:
-        train_sets (dict): 训练集字典，键为流域ID，值为训练集场次列表
-        val_sets (dict): 验证集字典，键为流域ID，值为验证集场次列表
-        output_folder (str): 输出CSV文件的文件夹路径
+    Parameters:
+        train_sets (dict): Training set dictionary, keys are basin IDs, values are lists of training event IDs
+        val_sets (dict): Validation set dictionary, keys are basin IDs, values are lists of validation event IDs
+        output_folder (str): Folder path for output CSV files
     
-    返回:
-        tuple: 包含两个字符串，分别是训练集和验证集CSV文件的路径
+    Returns:
+        tuple: Contains two strings, paths to training and validation set CSV files
     """
-    # 确保输出文件夹存在
+    # Ensure output folder exists
     os.makedirs(output_folder, exist_ok=True)
     
-    # 定义输出文件路径
+    # Define output file paths
     train_csv_path = os.path.join(output_folder, "train_sets.csv")
     val_csv_path = os.path.join(output_folder, "validation_sets.csv")
     
-    # 导出训练集ID到CSV
+    # Export training set IDs to CSV
     with open(train_csv_path, 'w', newline='') as csvfile:
         writer = csv.writer(csvfile)
-        writer.writerow(['basin'])  # 写入表头
+        writer.writerow(['basin'])  # Write header
         for basin_id, events in train_sets.items():
             for event_id in events:
-                # 检查event_id是否已经包含Anhui_前缀
+                # Check if event_id already contains Anhui_ prefix
                 if event_id.startswith(f"Anhui_{basin_id}"):
                     formatted_id = event_id
                 else:
-                    # 格式化为 Anhui_流域id_场次id
+                    # Format as Anhui_basin_id_event_id
                     formatted_id = f"Anhui_{basin_id}_{event_id}"
                 writer.writerow([formatted_id])
     
-    # 导出验证集ID到CSV
+    # Export validation set IDs to CSV
     with open(val_csv_path, 'w', newline='') as csvfile:
         writer = csv.writer(csvfile)
-        writer.writerow(['basin'])  # 写入表头
+        writer.writerow(['basin'])  # Write header
         for basin_id, events in val_sets.items():
             for event_id in events:
-                # 检查event_id是否已经包含Anhui_前缀
+                # Check if event_id already contains Anhui_ prefix
                 if event_id.startswith(f"Anhui_{basin_id}"):
                     formatted_id = event_id
                 else:
-                    # 格式化为 Anhui_流域id_场次id
+                    # Format as Anhui_basin_id_event_id
                     formatted_id = f"Anhui_{basin_id}_{event_id}"
                 writer.writerow([formatted_id])
     
-    print(f"\n训练集ID已导出到: {train_csv_path}")
-    print(f"验证集ID已导出到: {val_csv_path}")
+    print(f"\nTraining set IDs exported to: {train_csv_path}")
+    print(f"Validation set IDs exported to: {val_csv_path}")
     
     return train_csv_path, val_csv_path
 
 
 def process_nc_files(input_folder, output_folder):
     """
-    处理NC文件：将原始time维度的内容复制到time_true变量中，并统一输出744个时段
-    同时为训练集补充8月份数据，为验证集补充7月份数据，形成完整的7-8月数据集
+    Process NC files: Copy original time dimension content to time_true variable, and uniformly output 744 time steps
+    Also supplement training set with August data and validation set with July data to form complete July-August dataset
     
-    参数:
-        input_folder (str): 原始nc文件所在文件夹路径
-        output_folder (str): 输出nc文件的文件夹路径
+    Parameters:
+        input_folder (str): Path to folder containing original nc files
+        output_folder (str): Path to folder for output nc files
     
-    返回:
+    Returns:
         None
     """
-    # 确保输出文件夹存在
+    # Ensure output folder exists
     os.makedirs(output_folder, exist_ok=True)
-    # 获取所有nc文件
+    # Get all nc files
     nc_files = glob.glob(os.path.join(input_folder, "*.nc"))
     if not nc_files:
-        print(f"错误: 在 {input_folder} 中未找到任何nc文件")
+        print(f"Error: No nc files found in {input_folder}")
         return
-    print(f"共找到 {len(nc_files)} 个nc文件待处理")
+    print(f"Found {len(nc_files)} nc files to process")
     processed_count = 0
     error_count = 0
-    error_files = []  # 记录处理失败的文件
-    # 获取训练集和验证集
+    error_files = []  # Record files that failed to process
+    # Get training and validation sets
     train_sets, val_sets = identify_train_val_sets(input_folder)
-    # 将所有流域的训练集和验证集场次合并为两个列表
+    # Merge all training and validation set events from all basins into two lists
     all_train_events = []
     all_val_events = []
     for basin_id in train_sets:
@@ -179,17 +179,17 @@ def process_nc_files(input_folder, output_folder):
         all_val_events.extend(val_sets[basin_id])
     for nc_file in nc_files:
         filename = os.path.basename(nc_file)
-        event_id = filename.split('.')[0]  # 获取不带扩展名的文件名作为场次ID
-        # 读取原始nc文件
+        event_id = filename.split('.')[0]  # Get filename without extension as event ID
+        # Read original nc file
         ds = xr.open_dataset(nc_file)
-        # 获取原始时间值和数据
+        # Get original time values and data
         original_times = ds.time.values
         original_length = len(original_times)
-        # 保存原始时间到time_true变量
+        # Save original time to time_true variable
         ds['time_true'] = xr.Variable('time', original_times)
-        # 统一时段长度为744
+        # Uniform time step length to 744
         target_length = 744
-        # 检查所有变量的时间维度是否一致
+        # Check if time dimensions of all variables are consistent
         time_dims = {}
         for var_name, var in ds.data_vars.items():
             if 'time' in var.dims:
@@ -197,298 +197,298 @@ def process_nc_files(input_folder, output_folder):
                 if var_time_len not in time_dims:
                     time_dims[var_time_len] = []
                 time_dims[var_time_len].append(var_name)
-        # 如果有多个不同的时间维度长度，先统一它们
+        # If there are multiple different time dimension lengths, unify them first
         if len(time_dims) > 1:
-            print(f"  ⚠ 发现多个不同的时间维度长度: {time_dims}")
-            # 找出最短的时间维度长度
+            print(f"  ⚠ Found multiple different time dimension lengths: {time_dims}")
+            # Find the shortest time dimension length
             min_time_len = min(time_dims.keys())
-            # 截取所有变量到最短的长度
+            # Truncate all variables to the shortest length
             for var_name in ds.data_vars:
                 if 'time' in ds[var_name].dims and ds[var_name].sizes['time'] > min_time_len:
                     ds[var_name] = ds[var_name].isel(time=slice(0, min_time_len))
-            # 更新时间维度
+            # Update time dimension
             ds = ds.isel(time=slice(0, min_time_len))
-            # 更新原始长度
+            # Update original length
             original_length = min_time_len
             original_times = ds.time.values
-            print(f"  ℹ 已将所有变量截取到相同的时间长度: {min_time_len}")
+            print(f"  ℹ Truncated all variables to the same time length: {min_time_len}")
         if original_length > target_length:
-            # 如果原始时段长度大于目标长度，从后往前截取744个时段
+            # If original time step length is greater than target length, truncate last 744 time steps from the end
             start_idx = original_length - target_length
             ds = ds.isel(time=slice(start_idx, original_length))
         elif original_length < target_length:
-            # 如果原始时段长度小于目标长度，需要填充
-            # 计算需要填充的时段数
+            # If original time step length is less than target length, padding is needed
+            # Calculate number of time steps to pad
             padding_length = target_length - original_length
-            print(f"  ℹ 原始时段数 {original_length} 小于目标时段数 {target_length}，需要填充 {padding_length} 个时段")
-            # 创建填充数据
-            # 假设时间间隔为1小时
+            print(f"  ℹ Original time steps {original_length} is less than target time steps {target_length}, need to pad {padding_length} time steps")
+            # Create padding data
+            # Assume time interval is 1 hour
             if len(original_times) > 0:
-                # 检查时间间隔
+                # Check time interval
                 if original_length > 1:
-                    # 确保时间是datetime64类型
+                    # Ensure time is datetime64 type
                     if isinstance(original_times[0], str):
                         original_times = np.array([np.datetime64(t) for t in original_times])
-                    # 计算平均时间间隔
+                    # Calculate average time interval
                     time_diffs = np.diff(original_times)
                     avg_time_diff = np.mean(time_diffs)
                     time_diff = avg_time_diff
                 else:
-                    # 如果只有一个时间点，默认使用1小时间间隔
+                    # If there is only one time point, default to 1 hour interval
                     time_diff = np.timedelta64(1, 'h')
-                # 创建新的时间数组（在原始时间前面添加）
+                # Create new time array (prepend to original time)
                 new_times = np.array([original_times[0] - (i+1) * time_diff for i in range(padding_length)])
-                new_times = np.flip(new_times)  # 反转数组使其按时间顺序
+                new_times = np.flip(new_times)  # Reverse array to keep chronological order
                 padded_times = np.concatenate([new_times, original_times])
-                # 为所有变量创建填充数据（使用第一个时段的值，而不是NaN）
+                # Create padding data for all variables (use values from first time step, not NaN)
                 padded_ds = xr.Dataset()
                 padded_ds['time'] = ('time', padded_times)
-                # 为每个数据变量创建填充数据
+                # Create padding data for each data variable
                 for var_name, var in ds.data_vars.items():
                     if 'time' in var.dims:
-                        # 获取变量的维度
+                        # Get variable dimensions
                         dims = var.dims
                         shape = list(var.shape)
                         time_dim_idx = dims.index('time')
-                        # 创建填充数组
+                        # Create padding array
                         pad_shape = shape.copy()
                         pad_shape[time_dim_idx] = padding_length
-                        # 使用第一个时段的值进行填充，而不是NaN
+                        # Use values from first time step for padding, not NaN
                         if np.issubdtype(var.dtype, np.number):
-                            # 获取第一个时段的值
+                            # Get values from first time step
                             first_values = var.isel(time=0).values
-                            # 创建填充数组，用第一个时段的值填充
+                            # Create padding array, fill with values from first time step
                             pad_data = np.zeros(pad_shape, dtype=var.dtype)
-                            # 对于多维数组，需要在时间维度上重复第一个时段的值
+                            # For multi-dimensional arrays, need to repeat values from first time step in time dimension
                             if len(pad_shape) > 1:
-                                # 为每个时间点复制第一个时段的值
+                                # Copy values from first time step for each time point
                                 for i in range(padding_length):
-                                    # 选择正确的索引方式来设置值
+                                    # Select correct indexing method to set values
                                     idx = [slice(None)] * len(dims)
                                     idx[time_dim_idx] = i
                                     pad_data[tuple(idx)] = first_values
                             else:
-                                # 对于一维数组，直接填充第一个值
+                                # For one-dimensional arrays, directly fill with first value
                                 pad_data.fill(var.values[0])
                         else:
-                            # 非数值型变量，尝试使用第一个值
+                            # Non-numeric variables, try to use first value
                             first_value = var.isel(time=0).values
                             pad_data = np.full(pad_shape, first_value, dtype=var.dtype)
-                        # 合并原始数据和填充数据
+                        # Merge original data and padding data
                         padded_data = np.concatenate([pad_data, var.values], axis=time_dim_idx)
                         padded_ds[var_name] = (dims, padded_data)
                     else:
-                        # 对于不依赖时间维度的变量，直接复制
+                        # For variables that don't depend on time dimension, directly copy
                         padded_ds[var_name] = var
-                # 替换原始数据集
+                # Replace original dataset
                 ds = padded_ds
-                print(f"  ℹ 成功填充时段，新的时段数: {len(ds.time)}，填充值使用了第一个时段的值")
+                print(f"  ℹ Successfully padded time steps, new time step count: {len(ds.time)}, padding values used values from first time step")
             else:
-                raise ValueError("原始时间数组为空，无法进行填充")
-        # 根据场次是训练集还是验证集，设置不同的时间范围
+                raise ValueError("Original time array is empty, cannot perform padding")
+        # Set different time ranges based on whether event is in training or validation set
         if event_id in all_train_events:
-            # 训练集时间范围：2024-07-01 00:00:00 ~ 2024-07-31 23:00:00
+            # Training set time range: 2024-07-01 00:00:00 ~ 2024-07-31 23:00:00
             start_time = np.datetime64('2024-07-01T00:00:00')
-            # 计算每小时的时间点
+            # Calculate hourly time points
             new_times = np.array([start_time + np.timedelta64(i, 'h') for i in range(target_length)])
-            # 不要覆盖time_true，只修改time
+            # Don't overwrite time_true, only modify time
             ds['time'] = xr.Variable('time', new_times)
-            # 删除这行：ds['time_true'] = xr.Variable('time', new_times)
-            # 为训练集补充8月份数据
+            # Delete this line: ds['time_true'] = xr.Variable('time', new_times)
+            # Supplement training set with August data
             aug_start_time = np.datetime64('2024-08-01T00:00:00')
-            aug_hours = 31 * 24  # 8月份总小时数
+            aug_hours = 31 * 24  # Total hours in August
             aug_times = np.array([aug_start_time + np.timedelta64(i, 'h') for i in range(aug_hours)])
-            # 创建扩展数据集
+            # Create extended dataset
             aug_ds = xr.Dataset()
             aug_ds['time'] = ('time', aug_times)
-            # 设置扩展数据集的time_true也为8月的时间变量
+            # Set time_true of extended dataset to August time variable
             aug_ds['time_true'] = ('time', aug_times)
-            # 获取7月31日23:00:00的streamflow值
+            # Get streamflow value at 2024-07-31 23:00:00
             last_july_time = np.datetime64('2024-07-31T23:00:00')
             last_july_idx = np.where(new_times == last_july_time)[0][0]
-            # 为每个变量创建扩展数据
+            # Create extended data for each variable
             for var_name, var in ds.data_vars.items():
                 if 'time' in var.dims:
-                    # 获取变量的维度
+                    # Get variable dimensions
                     dims = var.dims
                     shape = list(var.shape)
                     time_dim_idx = dims.index('time') 
-                    # 创建扩展数组
+                    # Create extended array
                     aug_shape = shape.copy()
                     aug_shape[time_dim_idx] = aug_hours
-                    # 对于streamflow变量，使用7月31日23:00:00的值
+                    # For streamflow variables, use value from 2024-07-31 23:00:00
                     if var_name == 'streamflow' or var_name == 'streamflow_obs':
-                        # 获取7月31日23:00:00的值
+                        # Get value from 2024-07-31 23:00:00
                         last_july_value = var.isel(time=last_july_idx).values
-                        # 创建填充数组，用7月31日23:00:00的值填充
+                        # Create padding array, fill with value from 2024-07-31 23:00:00
                         aug_data = np.zeros(aug_shape, dtype=var.dtype)
-                        # 对于多维数组，需要在时间维度上重复该值
+                        # For multi-dimensional arrays, need to repeat this value in time dimension
                         if len(aug_shape) > 1:
                             for i in range(aug_hours):
                                 idx = [slice(None)] * len(dims)
                                 idx[time_dim_idx] = i
                                 aug_data[tuple(idx)] = last_july_value
                         else:
-                            # 对于一维数组，直接填充该值
+                            # For one-dimensional arrays, directly fill with this value
                             aug_data.fill(last_july_value)
                     elif var_name == 'P_Anhui' or var_name in ['evaporation', 'temperature_2m', 'potential_evaporation_hourly', 'total_evaporation_hourly', 'total_precipitation_hourly']:
-                        # P_Anhui变量设为0
+                        # P_Anhui variable set to 0
                         aug_data = np.zeros(aug_shape, dtype=np.float64)
                     else:
-                        # 其他变量设为NaN
+                        # Other variables set to NaN
                         aug_data = np.full(aug_shape, np.nan, dtype=var.dtype)
                     aug_ds[var_name] = (dims, aug_data)
                 else:
-                    # 对于不依赖时间维度的变量，直接复制
+                    # For variables that don't depend on time dimension, directly copy
                     aug_ds[var_name] = var
         elif event_id in all_val_events:
-            # 验证集时间范围：2024-08-01 00:00:00 ~ 2024-08-31 23:00:00
+            # Validation set time range: 2024-08-01 00:00:00 ~ 2024-08-31 23:00:00
             start_time = np.datetime64('2024-08-01T00:00:00')
-            # 计算每小时的时间点
+            # Calculate hourly time points
             new_times = np.array([start_time + np.timedelta64(i, 'h') for i in range(target_length)])
-            # 不要覆盖time_true，只修改time
+            # Don't overwrite time_true, only modify time
             ds['time'] = xr.Variable('time', new_times)
-            # 为验证集补充7月份数据
+            # Supplement validation set with July data
             jul_start_time = np.datetime64('2024-07-01T00:00:00')
-            jul_hours = 31 * 24  # 7月份总小时数
+            jul_hours = 31 * 24  # Total hours in July
             jul_times = np.array([jul_start_time + np.timedelta64(i, 'h') for i in range(jul_hours)])
-            # 创建扩展数据集
+            # Create extended dataset
             jul_ds = xr.Dataset()
             jul_ds['time'] = ('time', jul_times)
-            # 设置扩展数据集的time_true也为7月的时间变量
+            # Set time_true of extended dataset to July time variable
             jul_ds['time_true'] = ('time', jul_times)
-            # 获取8月1日00:00:00的streamflow值
+            # Get streamflow value at 2024-08-01 00:00:00
             first_aug_time = np.datetime64('2024-08-01T00:00:00')
             first_aug_idx = np.where(new_times == first_aug_time)[0][0]
-            # 为每个变量创建扩展数据
+            # Create extended data for each variable
             for var_name, var in ds.data_vars.items():
                 if 'time' in var.dims:
-                    # 获取变量的维度
+                    # Get variable dimensions
                     dims = var.dims
                     shape = list(var.shape)
                     time_dim_idx = dims.index('time')
-                    # 创建扩展数组
+                    # Create extended array
                     jul_shape = shape.copy()
                     jul_shape[time_dim_idx] = jul_hours
-                    # 对于streamflow变量，使用8月1日00:00:00的值
+                    # For streamflow variables, use value from 2024-08-01 00:00:00
                     if var_name == 'streamflow' or var_name == 'streamflow_obs':
-                        # 获取8月1日00:00:00的值
+                        # Get value from 2024-08-01 00:00:00
                         first_aug_value = var.isel(time=first_aug_idx).values
-                        # 创建填充数组，用8月1日00:00:00的值填充
+                        # Create padding array, fill with value from 2024-08-01 00:00:00
                         jul_data = np.zeros(jul_shape, dtype=var.dtype)
-                        # 对于多维数组，需要在时间维度上重复该值
+                        # For multi-dimensional arrays, need to repeat this value in time dimension
                         if len(jul_shape) > 1:
                             for i in range(jul_hours):
                                 idx = [slice(None)] * len(dims)
                                 idx[time_dim_idx] = i
                                 jul_data[tuple(idx)] = first_aug_value
                         else:
-                            # 对于一维数组，直接填充该值
+                            # For one-dimensional arrays, directly fill with this value
                             jul_data.fill(first_aug_value)
                     elif var_name == 'P_Anhui' or var_name in ['evaporation', 'temperature_2m', 'potential_evaporation_hourly', 'total_evaporation_hourly', 'total_precipitation_hourly']:
-                        # 这些变量都设为0
+                        # These variables all set to 0
                         jul_data = np.zeros(jul_shape, dtype=np.float64)
                     else:
-                        # 其他变量设为NaN
+                        # Other variables set to NaN
                         jul_data = np.full(jul_shape, np.nan, dtype=var.dtype)
                     jul_ds[var_name] = (dims, jul_data)
                 else:
-                    # 对于不依赖时间维度的变量，直接复制
+                    # For variables that don't depend on time dimension, directly copy
                     jul_ds[var_name] = var 
         else:
-            # 如果不在训练集或验证集中，保持原始时间
+            # If not in training or validation set, keep original time
             new_times = ds.time.values
-            # 设置time_true为原始时间
+            # Set time_true to original time
             ds['time_true'] = xr.Variable('time', new_times)
-            print(f"  ℹ 场次 {event_id} 不在训练集或验证集中，保持原始时间")
-        # 确保所有变量的时间维度长度一致
+            print(f"  ℹ Event {event_id} is not in training or validation set, keeping original time")
+        # Ensure time dimension lengths of all variables are consistent
         for var_name, var in list(ds.data_vars.items()):
             if 'time' in var.dims and var.sizes['time'] != target_length:
-                print(f"  ⚠ 变量 {var_name} 的时间维度长度 ({var.sizes['time']}) 与目标长度 ({target_length}) 不一致，将进行调整")
+                print(f"  ⚠ Variable {var_name} time dimension length ({var.sizes['time']}) does not match target length ({target_length}), will adjust")
                 if var.sizes['time'] < target_length:
-                    # 如果变量的时间维度小于目标长度，需要填充
+                    # If variable time dimension is less than target length, need to pad
                     padding_length = target_length - var.sizes['time']
-                    # 获取变量的维度
+                    # Get variable dimensions
                     dims = var.dims
                     shape = list(var.shape)
                     time_dim_idx = dims.index('time')
-                    # 创建填充数组
+                    # Create padding array
                     pad_shape = shape.copy()
                     pad_shape[time_dim_idx] = padding_length
-                    # 使用第一个时段的值进行填充
+                    # Use values from first time step for padding
                     if np.issubdtype(var.dtype, np.number):
-                        # 获取第一个时段的值
+                        # Get values from first time step
                         first_values = var.isel(time=0).values
-                        # 创建填充数组
+                        # Create padding array
                         pad_data = np.zeros(pad_shape, dtype=var.dtype)
-                        # 对于多维数组，需要在时间维度上重复第一个时段的值
+                        # For multi-dimensional arrays, need to repeat values from first time step in time dimension
                         if len(pad_shape) > 1:
-                            # 为每个时间点复制第一个时段的值
+                            # Copy values from first time step for each time point
                             for i in range(padding_length):
-                                # 选择正确的索引方式来设置值
+                                # Select correct indexing method to set values
                                 idx = [slice(None)] * len(dims)
                                 idx[time_dim_idx] = i
                                 pad_data[tuple(idx)] = first_values
                         else:
-                            # 对于一维数组，直接填充第一个值
+                            # For one-dimensional arrays, directly fill with first value
                             pad_data.fill(var.values[0])
                     else:
-                        # 非数值型变量，尝试使用第一个值
+                        # Non-numeric variables, try to use first value
                         first_value = var.isel(time=0).values
                         pad_data = np.full(pad_shape, first_value, dtype=var.dtype)
-                    # 合并原始数据和填充数据
+                    # Merge original data and padding data
                     padded_data = np.concatenate([pad_data, var.values], axis=time_dim_idx)
                     ds[var_name] = (dims, padded_data)
                 else:
-                    # 如果变量的时间维度大于目标长度，从后往前截取
+                    # If variable time dimension is greater than target length, truncate from the end
                     start_idx = var.sizes['time'] - target_length
                     ds[var_name] = var.isel(time=slice(start_idx, var.sizes['time']))
-        # 更新时间维度
+        # Update time dimension
         ds['time'] = ('time', new_times)
-        # 合并扩展数据集（如果有）
+        # Merge extended dataset (if exists)
         if event_id in all_train_events and 'aug_ds' in locals():
-            # 合并训练集和8月份扩展数据
+            # Merge training set and August extended data
             ds = xr.concat([ds, aug_ds], dim='time')
         elif event_id in all_val_events and 'jul_ds' in locals():
-            # 合并验证集和7月份扩展数据
+            # Merge validation set and July extended data
             ds = xr.concat([jul_ds, ds], dim='time')
-        # 保存修改后的文件
+        # Save modified file
         output_file = os.path.join(output_folder, filename)
         ds.to_netcdf(output_file)
         processed_count += 1
-    print("\n处理完成统计:")
-    print(f"  - 成功处理: {processed_count} 个文件")
-    print(f"  - 处理失败: {error_count} 个文件")
-    print(f"  - 总文件数: {len(nc_files)} 个文件")
-    # 如果有处理失败的文件，打印详细信息
+    print("\nProcessing statistics:")
+    print(f"  - Successfully processed: {processed_count} files")
+    print(f"  - Failed to process: {error_count} files")
+    print(f"  - Total files: {len(nc_files)} files")
+    # If there are files that failed to process, print detailed information
     if error_files:
-        print("\n处理失败的文件详情:")
+        print("\nFiles that failed to process:")
         for i, error_file in enumerate(error_files):
             print(f"  {i+1}. {error_file['filename']}: {error_file['error']}")
 
 
 if __name__ == "__main__":
-    # 指定文件夹路径
+    # Specify folder paths
     data_folder = r"E:\Takusan_no_Code\Dataset\Interim_Dataset\Dataset_CHINA\Anhui_1H"
     output_folder = r"E:\Takusan_no_Code\Dataset\Processed_Dataset\Dataset_CHINA\Anhui_1H_Flood"
-    # 1. 运行划分函数
+    # 1. Run division function
     print("=" * 50)
-    print("开始划分训练集和验证集...")
+    print("Starting to divide training and validation sets...")
     print("=" * 50)
     train_sets, val_sets = identify_train_val_sets(data_folder)
-    # 打印总体统计信息
-    print("\n" + "=" * 20 + " 总体统计 " + "=" * 20)
-    print(f"总流域数: {len(train_sets)}")
-    print(f"总训练场次: {sum(len(samples) for samples in train_sets.values())}")
-    print(f"总验证场次: {sum(len(samples) for samples in val_sets.values())}")
-    # 2. 导出训练集和验证集ID到CSV
+    # Print overall statistics
+    print("\n" + "=" * 20 + " Overall Statistics " + "=" * 20)
+    print(f"Total basins: {len(train_sets)}")
+    print(f"Total training events: {sum(len(samples) for samples in train_sets.values())}")
+    print(f"Total validation events: {sum(len(samples) for samples in val_sets.values())}")
+    # 2. Export training and validation set IDs to CSV
     print("\n" + "=" * 50)
-    print("导出训练集和验证集ID到CSV文件...")
+    print("Exporting training and validation set IDs to CSV files...")
     print("=" * 50)
     export_sets_to_csv(train_sets, val_sets, output_folder)
     
-    # 3. 处理文件
+    # 3. Process files
     print("\n" + "=" * 50)
-    print("开始处理NC文件...")
+    print("Starting to process NC files...")
     print("=" * 50)
     process_nc_files(data_folder, output_folder)

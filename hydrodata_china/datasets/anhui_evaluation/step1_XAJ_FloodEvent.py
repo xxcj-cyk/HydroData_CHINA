@@ -44,7 +44,7 @@ BASIN_ID_TO_LABEL = {
 
 def evaluate_metrics(obs, pred):
     """
-    评估所有指标，返回字典
+    Evaluate all metrics and return a dictionary
     """
     obs = np.array(obs)
     pred = np.array(pred)
@@ -64,7 +64,7 @@ def evaluate_metrics(obs, pred):
 
 def process_csv_files(csv_dir):
     """
-    处理所有CSV文件，计算所有指标
+    Process all CSV files and calculate all metrics
     """
     results = []
     csv_files = [f for f in os.listdir(csv_dir) if f.endswith('.csv')]
@@ -81,16 +81,16 @@ def process_csv_files(csv_dir):
                 metrics['filename'] = file
                 results.append(metrics)
             else:
-                print(f"警告: {file} 缺少必要的列 'streamflow_obs' 或 'streamflow_pred_xaj'。")
+                print(f"Warning: {file} is missing required columns 'streamflow_obs' or 'streamflow_pred_xaj'.")
     return pd.DataFrame(results)
 
 def plot_metric_boxplot(df, metric, output_dir=None):
     """
-    绘制指定指标的箱型图，并设置纵坐标范围，X轴标记为A01~A21，并在每个箱子上标注中位数
+    Plot boxplot for the specified metric, set y-axis range, mark X-axis as A01~A21, and annotate median on each box
     """
     plt.figure(figsize=(12, 8))
     sns.set_style("whitegrid")
-    # 用映射表生成 basin_label
+    # Generate basin_label using mapping table
     df = df.copy()
     df['basin_label'] = df['basin_id'].map(BASIN_ID_TO_LABEL)
     basin_order = [f"A{str(i).zfill(2)}" for i in range(1, 22)]
@@ -109,19 +109,19 @@ def plot_metric_boxplot(df, metric, output_dir=None):
     }
     if metric in ylims:
         plt.ylim(ylims[metric])
-        ax.set_yticklabels(ax.get_yticklabels(), fontsize=18)  # 结合设置
+        ax.set_yticklabels(ax.get_yticklabels(), fontsize=18)  # Combined with settings
 
-    # 计算中位数并标注
+    # Calculate and annotate median
     medians = df.groupby('basin_label')[metric].median()
     for i, label in enumerate(basin_order):
         if label in medians:
             median_val = medians[label]
-            # 根据指标类型设置格式
+            # Set format based on metric type
             if metric in ['rmse', 'pte', 'pfe']:
                 median_str = f"{int(round(median_val))}"
             else:
                 median_str = f"{median_val:.2f}"
-            # 在箱子上方稍微偏上一点标注
+            # Annotate slightly above the box
             ax.text(i, median_val + (ylims[metric][1] - ylims[metric][0]) * 0.001, 
                     median_str, 
                     ha='center', va='bottom', fontsize=14, color='black')
@@ -130,7 +130,7 @@ def plot_metric_boxplot(df, metric, output_dir=None):
     if output_dir:
         output_path = os.path.join(output_dir, f'{metric}_boxplot.png')
         plt.savefig(output_path, dpi=300, bbox_inches='tight')
-        print(f"{metric.upper()}箱型图已保存至: {output_path}")
+        print(f"{metric.upper()} boxplot saved to: {output_path}")
     plt.show()
 
 def main():
@@ -138,26 +138,26 @@ def main():
     output_dir = r"E:\Takusan_no_Code\Dataset\Interim_Dataset\Dataset_CHINA\Anhui_1H_Flood_CSV\Result"
     os.makedirs(output_dir, exist_ok=True)
     df = process_csv_files(csv_dir)
-    # 打印统计信息
-    print("\n统计信息:")
+    # Print statistics
+    print("\nStatistics:")
     for basin_id, group in df.groupby('basin_id'):
         print(
-            f"流域 {basin_id}: "
-            f"NSE均值={group['nse'].mean():.3f}, "
-            f"KGE均值={group['kge'].mean():.3f}, "
-            f"Corr均值={group['corr'].mean():.3f}, "
-            f"RMSE均值={group['rmse'].mean():.1f}, "
-            f"PFE均值={group['pfe'].mean():.1f}, "
-            f"PTE均值={group['pte'].mean():.1f}, "
-            f"样本数={len(group)}"
+            f"Basin {basin_id}: "
+            f"NSE_mean={group['nse'].mean():.3f}, "
+            f"KGE_mean={group['kge'].mean():.3f}, "
+            f"Corr_mean={group['corr'].mean():.3f}, "
+            f"RMSE_mean={group['rmse'].mean():.1f}, "
+            f"PFE_mean={group['pfe'].mean():.1f}, "
+            f"PTE_mean={group['pte'].mean():.1f}, "
+            f"sample_count={len(group)}"
         )
-    # 绘制各指标箱型图
+    # Plot boxplots for each metric
     for metric in ['nse', 'kge', 'corr', 'rmse', 'pfe', 'pte']:
         plot_metric_boxplot(df, metric, output_dir)
-    # 保存结果
+    # Save results
     results_path = os.path.join(output_dir, 'evaluation_results.csv')
     df.to_csv(results_path, index=False)
-    print(f"所有评估结果已保存至: {results_path}")
+    print(f"All evaluation results saved to: {results_path}")
 
 if __name__ == "__main__":
     main()

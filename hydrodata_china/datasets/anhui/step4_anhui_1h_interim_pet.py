@@ -11,63 +11,63 @@ import os
 import pandas as pd
 import glob
 import logging
-import xarray as xr  # 添加xarray库导入
+import xarray as xr  # Add xarray library import
 
 
-# 配置日志
+# Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 
 def process_csv_files(input_dir, output_dir):
     """
-    读取按年份存储的CSV文件，并将它们重新组织为按流域ID存储的NC文件
+    Read CSV files organized by year and reorganize them as NC files organized by basin ID
     
-    参数:
-    input_dir (str): 包含按年份存储的CSV文件的目录路径
-    output_dir (str): 保存按流域ID组织的输出文件的目录路径
+    Parameters:
+    input_dir (str): Directory path containing CSV files organized by year
+    output_dir (str): Directory path for saving output files organized by basin ID
     """
-    # 确保输出目录存在
+    # Ensure output directory exists
     os.makedirs(output_dir, exist_ok=True)
-    # 获取所有CSV文件
+    # Get all CSV files
     csv_files = glob.glob(os.path.join(input_dir, '*.csv'))
-    logging.info(f'找到 {len(csv_files)} 个CSV文件')
+    logging.info(f'Found {len(csv_files)} CSV files')
     if not csv_files:
-        logging.error(f'在 {input_dir} 中没有找到CSV文件')
+        logging.error(f'No CSV files found in {input_dir}')
         return
-    # 创建一个字典来存储每个流域的数据
+    # Create a dictionary to store data for each basin
     basin_data = {}
-    # 处理每个CSV文件
+    # Process each CSV file
     for csv_file in csv_files:
-        # 读取CSV文件
+        # Read CSV file
         df = pd.read_csv(csv_file)
-        # 将时间列转换为datetime格式
+        # Convert time column to datetime format
         df['time_start'] = pd.to_datetime(df['time_start'])
-        # 将温度从开尔文转换为摄氏度
+        # Convert temperature from Kelvin to Celsius
         df['temperature_2m'] = df['temperature_2m'] - 273.15
-        # 将蒸发和降水变量乘以1000
+        # Multiply evaporation and precipitation variables by 1000
         df['potential_evaporation_hourly'] = df['potential_evaporation_hourly'] * 1000
         df['total_evaporation_hourly'] = df['total_evaporation_hourly'] * 1000
         df['total_precipitation_hourly'] = df['total_precipitation_hourly'] * 1000
-        # 按流域ID分组
+        # Group by basin ID
         for basin_id, group in df.groupby('basin_id'):
             if basin_id not in basin_data:
                 basin_data[basin_id] = []
             basin_data[basin_id].append(group)
-        logging.info(f'已处理文件 {csv_file}')
-    # 合并并保存每个流域的数据
+        logging.info(f'Processed file {csv_file}')
+    # Merge and save data for each basin
     for basin_id, data_frames in basin_data.items():
-        # 合并该流域的所有数据
+        # Merge all data for this basin
         basin_df = pd.concat(data_frames)
-        # 按时间排序
+        # Sort by time
         basin_df = basin_df.sort_values('time_start')
-        # 删除可能的重复数据
+        # Remove possible duplicate data
         original_len = len(basin_df)
         basin_df = basin_df.drop_duplicates()
         if len(basin_df) < original_len:
-            logging.info(f'删除了流域 {basin_id} 的重复数据，共 {original_len - len(basin_df)} 条')
-        # 删除basin_id列
+            logging.info(f'Removed duplicate data for basin {basin_id}, total {original_len - len(basin_df)} records')
+        # Remove basin_id column
         basin_df = basin_df.drop(columns=['basin_id'])
-        # 将DataFrame转换为xarray Dataset
+        # Convert DataFrame to xarray Dataset
         ds = xr.Dataset(
             {
                 column: ("time", basin_df[column].values) for column in basin_df.columns if column != 'time_start'
@@ -80,23 +80,23 @@ def process_csv_files(input_dir, output_dir):
                 "basin_id": basin_id,
             }
         )
-        # 将UTC时间转换为中国时间（UTC+8）
+        # Convert UTC time to China time (UTC+8)
         time_china = pd.to_datetime(ds.time.values) + pd.Timedelta(hours=8)
         ds = ds.assign_coords(time=time_china)
-        logging.info(f"已将流域 {basin_id} 的时间从UTC转换为中国时间（UTC+8）")
-        # 筛选1960~2022年的数据
+        logging.info(f"Converted time from UTC to China time (UTC+8) for basin {basin_id}")
+        # Filter data for 1960~2022
         ds = ds.sel(time=slice('1960-01-01', '2022-12-31 23:59:59'))
-        logging.info(f'筛选后流域 {basin_id} 的数据范围为 {ds.time.values.min()} 到 {ds.time.values.max()}，共 {len(ds.time)} 条记录')
-        # 保存为NC文件
+        logging.info(f'After filtering, data range for basin {basin_id} is from {ds.time.values.min()} to {ds.time.values.max()}, total {len(ds.time)} records')
+        # Save as NC file
         output_file = os.path.join(output_dir, f'{basin_id}_PET.nc')
         ds.to_netcdf(output_file)
-        logging.info(f'已保存流域 {basin_id} 的数据到 {output_file}，共 {len(basin_df)} 条记录')
-    logging.info(f'处理完成，共处理了 {len(basin_data)} 个流域的数据')
+        logging.info(f'Saved data for basin {basin_id} to {output_file}, total {len(basin_df)} records')
+    logging.info(f'Processing completed, processed data for {len(basin_data)} basins')
 
 
 if __name__ == '__main__':
-    # 设置输入和输出目录
+    # Set input and output directories
     input_directory = r"E:\Takusan_no_Code\Dataset\Original_Dataset\Dataset_CHINA\Anhui\PET_ERA5-Land_21"
     output_directory = r"E:\Takusan_no_Code\Dataset\Interim_Dataset\Dataset_CHINA\Anhui_1H_PET"
-    # 处理CSV文件并输出为NC文件
+    # Process CSV files and output as NC files
     process_csv_files(input_directory, output_directory)

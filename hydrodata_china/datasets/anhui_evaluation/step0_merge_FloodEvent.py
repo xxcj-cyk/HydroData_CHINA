@@ -12,7 +12,7 @@ import xarray as xr
 
 base_dir = r"E:\Takusan_no_Code\Paper\Paper2_Anhui_FloodEvent\Result\Sec1_ModelPerf\Month\Anhui_EnLoss-LSTM"
 
-# 不带_train后缀的目录
+# Directories without _train suffix
 basin_dirs = [
     "anhui_50406910_28",
     "anhui_50501200_36",
@@ -37,10 +37,10 @@ basin_dirs = [
     "anhui_70114100_35"
 ]
 
-# 带_train后缀的目录
+# Directories with _train suffix
 basin_train_dirs = [f"{d}_train" for d in basin_dirs]
 
-# 文件类型与对应目录
+# File types and corresponding directories
 file_dir_map = {
     "epoch_best_flow_obs.nc": basin_dirs,
     "epoch_best_flow_pred.nc": basin_dirs,
@@ -48,7 +48,7 @@ file_dir_map = {
     "epoch_best_model.pth_flow_pred.nc": basin_train_dirs
 }
 
-# 合并并保存
+# Merge and save
 for fname, dirs in file_dir_map.items():
     files = []
     for d in dirs:
@@ -60,6 +60,6 @@ for fname, dirs in file_dir_map.items():
         ds = xr.concat(datasets, dim="basin")
         out_path = os.path.join(base_dir, fname)
         ds.to_netcdf(out_path)
-        print(f"已保存: {out_path}")
+        print(f"Saved: {out_path}")
     else:
-        print(f"{fname} 没有找到文件。")
+        print(f"No files found for {fname}.")

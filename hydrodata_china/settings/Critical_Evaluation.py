@@ -11,27 +11,27 @@ import numpy as np
 
 def nse(obs, sim):
     """
-    计算 Nash-Sutcliffe 效率系数（Nash-Sutcliffe Efficiency, NSE）
-    参数:
-        obs: 观测值数组
-        sim: 模拟值数组
-    返回:
-        NSE 指标，越接近 1 表示模拟效果越好
+    Calculate Nash-Sutcliffe Efficiency coefficient (NSE)
+    Parameters:
+        obs: Array of observed values
+        sim: Array of simulated values
+    Returns:
+        NSE metric, values closer to 1 indicate better simulation performance
     """
     obs, sim = np.array(obs), np.array(sim)
     denominator = np.sum((obs - np.mean(obs)) ** 2)
     if denominator == 0:
-        return -np.inf  # 避免除以零
+        return -np.inf  # Avoid division by zero
     return 1 - np.sum((obs - sim) ** 2) / denominator
 
 def kge(obs, sim):
     """
-    计算 Kling-Gupta 效率系数（Kling-Gupta Efficiency, KGE）
-    参数:
-        obs: 观测值数组
-        sim: 模拟值数组
-    返回:
-        KGE 指标，综合相关性、变异性和均值偏差
+    Calculate Kling-Gupta Efficiency coefficient (KGE)
+    Parameters:
+        obs: Array of observed values
+        sim: Array of simulated values
+    Returns:
+        KGE metric, which integrates correlation, variability, and mean bias
     """
     obs, sim = np.array(obs), np.array(sim)
     if np.std(obs) == 0 or np.mean(obs) == 0:
@@ -45,26 +45,26 @@ def kge(obs, sim):
 
 def corr(obs, sim):
     """
-    计算皮尔逊相关系数（Pearson Correlation Coefficient, Corr）
-    参数:
-        obs: 观测值数组
-        sim: 模拟值数组
-    返回:
-        相关系数，衡量线性相关程度
+    Calculate Pearson Correlation Coefficient (Corr)
+    Parameters:
+        obs: Array of observed values
+        sim: Array of simulated values
+    Returns:
+        Correlation coefficient, measuring the degree of linear correlation
     """
     obs, sim = np.array(obs), np.array(sim)
     if np.std(obs) == 0 or np.std(sim) == 0:
-        return 0  # 常数序列无相关性
+        return 0  # Constant sequences have no correlation
     return np.corrcoef(obs, sim)[0, 1]
 
 def rmse(obs, sim):
     """
-    计算均方根误差（Root Mean Square Error, RMSE）
-    参数:
-        obs: 观测值数组
-        sim: 模拟值数组
-    返回:
-        RMSE，衡量模拟值与观测值的偏差
+    Calculate Root Mean Square Error (RMSE)
+    Parameters:
+        obs: Array of observed values
+        sim: Array of simulated values
+    Returns:
+        RMSE, measuring the deviation between simulated and observed values
     """
     obs = np.array(obs)
     sim = np.array(sim)
@@ -72,27 +72,27 @@ def rmse(obs, sim):
 
 def pfe(obs, sim):
     """
-    计算洪峰流量误差（Peak Flow Error, PFE）
-    参数:
-        obs: 观测值数组
-        sim: 模拟值数组
-    返回:
-        洪峰流量相对误差（%）
+    Calculate Peak Flow Error (PFE)
+    Parameters:
+        obs: Array of observed values
+        sim: Array of simulated values
+    Returns:
+        Relative error of peak flow (%)
     """
     peak_obs = np.max(obs)
     peak_sim = np.max(sim)
     if peak_obs == 0:
-        return np.inf if peak_sim != 0 else 0  # 避免除以零
+        return np.inf if peak_sim != 0 else 0  # Avoid division by zero
     return (peak_sim - peak_obs) / peak_obs * 100
 
 def peak_time_error(obs, sim):
     """
-    计算峰值时间误差（Peak Time Error, PTE）
-    参数:
-        obs: 观测值数组
-        sim: 模拟值数组
-    返回:
-        峰值出现时间的索引差（模拟-观测）
+    Calculate Peak Time Error (PTE)
+    Parameters:
+        obs: Array of observed values
+        sim: Array of simulated values
+    Returns:
+        Index difference of peak time occurrence (simulated - observed)
     """
     obs = np.array(obs)
     sim = np.array(sim)
