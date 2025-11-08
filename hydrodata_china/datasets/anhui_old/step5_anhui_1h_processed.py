@@ -316,6 +316,7 @@ def process_nc_files(input_folder, output_folder):
                     # Create extended array
                     aug_shape = shape.copy()
                     aug_shape[time_dim_idx] = aug_hours
+<<<<<<< HEAD:hydrodata_china/datasets/anhui/step6_anhui_1h_processed.py
                     # For streamflow variables, use value from 2024-07-31 23:00:00
                     if var_name == 'streamflow' or var_name == 'streamflow_obs':
                         # Get value from 2024-07-31 23:00:00
@@ -337,6 +338,9 @@ def process_nc_files(input_folder, output_folder):
                     else:
                         # Other variables set to NaN
                         aug_data = np.full(aug_shape, np.nan, dtype=var.dtype)
+=======
+                    aug_data = np.full(aug_shape, np.nan, dtype=var.dtype)
+>>>>>>> d5c8209abb8225c3386d1982a1cd0152a073a0d5:hydrodata_china/datasets/anhui_old/step5_anhui_1h_processed.py
                     aug_ds[var_name] = (dims, aug_data)
                 else:
                     # For variables that don't depend on time dimension, directly copy
@@ -370,6 +374,7 @@ def process_nc_files(input_folder, output_folder):
                     # Create extended array
                     jul_shape = shape.copy()
                     jul_shape[time_dim_idx] = jul_hours
+<<<<<<< HEAD:hydrodata_china/datasets/anhui/step6_anhui_1h_processed.py
                     # For streamflow variables, use value from 2024-08-01 00:00:00
                     if var_name == 'streamflow' or var_name == 'streamflow_obs':
                         # Get value from 2024-08-01 00:00:00
@@ -391,6 +396,9 @@ def process_nc_files(input_folder, output_folder):
                     else:
                         # Other variables set to NaN
                         jul_data = np.full(jul_shape, np.nan, dtype=var.dtype)
+=======
+                    jul_data = np.full(jul_shape, np.nan, dtype=var.dtype)
+>>>>>>> d5c8209abb8225c3386d1982a1cd0152a073a0d5:hydrodata_china/datasets/anhui_old/step5_anhui_1h_processed.py
                     jul_ds[var_name] = (dims, jul_data)
                 else:
                     # For variables that don't depend on time dimension, directly copy

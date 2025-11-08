@@ -4,7 +4,7 @@
 @Company:            Dalian University of Technology
 @Date:               2023-07-13 10:00:00
 @Last Modified by:   Yikai CHAI
-@Last Modified time: 2025-07-05 11:34:09
+@Last Modified time: 2025-07-19 10:26:32
 """
 
 import os
@@ -36,7 +36,7 @@ def merge_et_pet_data(flood_data_dir, et_data_dir, pet_data_dir, output_dir):
     # Get all ET and PET data files, using correct naming format
     et_files = {}
     for f in glob.glob(os.path.join(et_data_dir, "*.nc")):
-        match = re.search(r'Anhui_([0-9]+)_ET\.nc$', os.path.basename(f))
+        match = re.search(r'Anhui_([0-9]+)_PET\.nc$', os.path.basename(f))
         if match:
             station_code = match.group(1)
             et_files[station_code] = f
@@ -46,9 +46,15 @@ def merge_et_pet_data(flood_data_dir, et_data_dir, pet_data_dir, output_dir):
         if match:
             station_code = match.group(1)
             pet_files[station_code] = f
+<<<<<<< HEAD:hydrodata_china/datasets/anhui/step5_anhui_1h_interim_all.py
     logging.info(f"Found {len(et_files)} ET data files")
     logging.info(f"Found {len(pet_files)} PET data files")
     # Process each flood data file
+=======
+    logging.info(f"找到 {len(et_files)} 个anhui-PET数据文件")
+    logging.info(f"找到 {len(pet_files)} 个era5land-PET数据文件")
+    # 处理每个洪水数据文件
+>>>>>>> d5c8209abb8225c3386d1982a1cd0152a073a0d5:hydrodata_china/datasets/anhui_old/step4_anhui_1h_interim_all.py
     processed_count = 0
     for flood_file in flood_files:
         # Extract station code
@@ -59,10 +65,18 @@ def merge_et_pet_data(flood_data_dir, et_data_dir, pet_data_dir, output_dir):
         station_code = match.group(1)
         # Check if corresponding ET and PET data exist
         if station_code not in et_files:
+<<<<<<< HEAD:hydrodata_china/datasets/anhui/step5_anhui_1h_interim_all.py
             logging.warning(f"Station {station_code} has no corresponding ET data, skipping this file")
             continue
         if station_code not in pet_files:
             logging.warning(f"Station {station_code} has no corresponding PET data, skipping this file")
+=======
+            logging.warning(f"站点 {station_code} 没有对应的anhui-PET数据，跳过该文件")
+            continue
+        if station_code not in pet_files:
+            logging.warning(f"站点 {station_code} 没有对应的era5land-PET数据，跳过该文件")
+
+>>>>>>> d5c8209abb8225c3386d1982a1cd0152a073a0d5:hydrodata_china/datasets/anhui_old/step4_anhui_1h_interim_all.py
             continue
         # Read flood data
         flood_ds = xr.open_dataset(flood_file)
@@ -102,10 +116,19 @@ def merge_et_pet_data(flood_data_dir, et_data_dir, pet_data_dir, output_dir):
 
 
 if __name__ == "__main__":
+<<<<<<< HEAD:hydrodata_china/datasets/anhui/step5_anhui_1h_interim_all.py
     # Set data directories
     flood_data_dir = r"E:\Takusan_no_Code\Dataset\Interim_Dataset\Dataset_CHINA\Anhui_1H_Flood_new"
     et_data_dir = r"E:\Takusan_no_Code\Dataset\Interim_Dataset\Dataset_CHINA\Anhui_1H_ET"
     pet_data_dir = r"E:\Takusan_no_Code\Dataset\Interim_Dataset\Dataset_CHINA\Anhui_1H_PET"
     output_dir = r"E:\Takusan_no_Code\Dataset\Interim_Dataset\Dataset_CHINA\Anhui_1H_new"
     # Merge data
+=======
+    # 设置数据目录
+    flood_data_dir = r"E:\Takusan_no_Code\Dataset\Interim_Dataset\Dataset_CHINA\Anhui_1H_Flood"
+    et_data_dir = r"E:\Takusan_no_Code\Dataset\Interim_Dataset\Dataset_CHINA\Anhui_1H_anhui-PET"
+    pet_data_dir = r"E:\Takusan_no_Code\Dataset\Interim_Dataset\Dataset_CHINA\Anhui_1H_era5land-PET"
+    output_dir = r"E:\Takusan_no_Code\Dataset\Interim_Dataset\Dataset_CHINA\Anhui_1H"
+    # 合并数据
+>>>>>>> d5c8209abb8225c3386d1982a1cd0152a073a0d5:hydrodata_china/datasets/anhui_old/step4_anhui_1h_interim_all.py
     merge_et_pet_data(flood_data_dir, et_data_dir, pet_data_dir, output_dir)

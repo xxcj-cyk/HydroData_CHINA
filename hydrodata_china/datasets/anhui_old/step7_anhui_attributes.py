@@ -144,8 +144,13 @@ if __name__ == "__main__":
         # Output result preview
         print("\nMatch result preview:")
         print(matched_data.head())
+<<<<<<< HEAD:hydrodata_china/datasets/anhui/step1_anhui_attributes.py
         # Save result to NetCDF file
         output_nc = os.path.join(os.path.dirname(nc_directory_path), "attributes.nc")
+=======
+        # 保存结果到NetCDF文件
+        output_nc = r"E:\Takusan_no_Code\Dataset\Processed_Dataset\Dataset_CHINA\Anhui_1H\attributes.nc"
+>>>>>>> d5c8209abb8225c3386d1982a1cd0152a073a0d5:hydrodata_china/datasets/anhui_old/step7_anhui_attributes.py
         create_basin_attributes_nc(matched_data, output_nc)
     else:
         print("Failed to generate match results")

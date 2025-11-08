@@ -67,7 +67,8 @@ def reorder_dataset(ds):
         'T_ERA5-Land',
         'streamflow_obs',
         'streamflow_pred_xaj',
-        'streamflow',     
+        'streamflow',
+        'flood_event',
         'time_true'
     ]
     # Create new Dataset, preserving original coordinates

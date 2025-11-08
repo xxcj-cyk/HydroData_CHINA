@@ -4,7 +4,7 @@
 @Company:            Dalian University of Technology
 @Date:               2025-06-09 11:06:49
 @Last Modified by:   Yikai CHAI
-@Last Modified time: 2025-06-11 11:30:27
+@Last Modified time: 2025-07-19 10:24:00
 """
 
 import os
@@ -215,8 +215,13 @@ def process_evaporation_data(basin_station_mapping, station_data, output_dir, st
                 "basin_id": basin_id,
             }
         )
+<<<<<<< HEAD:hydrodata_china/datasets/anhui/step3_anhui_1h_interim_et.py
         # Save as NC file
         output_file = os.path.join(output_dir, f"{basin_id}_ET.nc")
+=======
+        # 保存为NC文件
+        output_file = os.path.join(output_dir, f"{basin_id}_PET.nc")
+>>>>>>> d5c8209abb8225c3386d1982a1cd0152a073a0d5:hydrodata_china/datasets/anhui_old/step2_anhui_1h_interim_anhuipet.py
         ds.to_netcdf(output_file)
         processed_count += 1
         logging.info(f"Saved evaporation data for basin {basin_id} to {output_file}, total {len(hourly_df)} records")
@@ -224,11 +229,19 @@ def process_evaporation_data(basin_station_mapping, station_data, output_dir, st
 
 
 if __name__ == "__main__":
+<<<<<<< HEAD:hydrodata_china/datasets/anhui/step3_anhui_1h_interim_et.py
     # Set file paths
     mapping_file_path = r"E:\Takusan_no_Code\Dataset\Original_Dataset\Dataset_CHINA\Anhui\ET_Station_21\流域蒸发站对应表.xlsx"
     evaporation_file_path = r"E:\Takusan_no_Code\Dataset\Original_Dataset\Dataset_CHINA\Anhui\ET_Station_21\多年平均月蒸散发.xlsx"
     output_dir = r"E:\Takusan_no_Code\Dataset\Interim_Dataset\Dataset_CHINA\Anhui_1H_ET"
     # Set year range
+=======
+    # 设置文件路径
+    mapping_file_path = r"E:\Takusan_no_Code\Dataset\Original_Dataset\Dataset_CHINA\Anhui\PET_Station_21\流域蒸发站对应表.xlsx"
+    evaporation_file_path = r"E:\Takusan_no_Code\Dataset\Original_Dataset\Dataset_CHINA\Anhui\PET_Station_21\多年平均月蒸散发.xlsx"
+    output_dir = r"E:\Takusan_no_Code\Dataset\Interim_Dataset\Dataset_CHINA\Anhui_1H_anhui-PET"
+    # 设置年份范围
+>>>>>>> d5c8209abb8225c3386d1982a1cd0152a073a0d5:hydrodata_china/datasets/anhui_old/step2_anhui_1h_interim_anhuipet.py
     start_year = 1960
     end_year = 2022
     logging.info("Starting to process Anhui basin evaporation data")

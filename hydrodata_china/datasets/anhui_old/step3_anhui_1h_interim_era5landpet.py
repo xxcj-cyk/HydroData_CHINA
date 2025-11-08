@@ -4,7 +4,7 @@
 @Company:            Dalian University of Technology
 @Date:               2025-06-09 10:15:56
 @Last Modified by:   Yikai CHAI
-@Last Modified time: 2025-06-11 11:21:36
+@Last Modified time: 2025-07-19 10:23:58
 """
 
 import os
@@ -97,6 +97,11 @@ def process_csv_files(input_dir, output_dir):
 if __name__ == '__main__':
     # Set input and output directories
     input_directory = r"E:\Takusan_no_Code\Dataset\Original_Dataset\Dataset_CHINA\Anhui\PET_ERA5-Land_21"
+<<<<<<< HEAD:hydrodata_china/datasets/anhui/step4_anhui_1h_interim_pet.py
     output_directory = r"E:\Takusan_no_Code\Dataset\Interim_Dataset\Dataset_CHINA\Anhui_1H_PET"
     # Process CSV files and output as NC files
+=======
+    output_directory = r"E:\Takusan_no_Code\Dataset\Interim_Dataset\Dataset_CHINA\Anhui_1H_era5land-PET"
+    # 处理CSV文件并输出为NC文件
+>>>>>>> d5c8209abb8225c3386d1982a1cd0152a073a0d5:hydrodata_china/datasets/anhui_old/step3_anhui_1h_interim_era5landpet.py
     process_csv_files(input_directory, output_directory)
