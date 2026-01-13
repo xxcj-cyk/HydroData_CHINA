@@ -11,18 +11,18 @@ import pandas as pd
 import numpy as np
 
 # 场次信息文件
-event_excel = r"E:\Takusan_no_Code\Dataset\Original_Dataset\Dataset_CHINA\Anhui\Flood_Event_21\FloodEvent20_705.xlsx"
+event_excel = r"E:\Takusan_no_Code\Dataset\Original_Dataset\Dataset_CHINA\Anhui\Flood_Event_21\FloodEvent16_612.xlsx"
 # 1H数据文件夹
-input_dir = r'E:\Takusan_no_Code\Dataset\Interim_Dataset\Dataset_CHINA\Anhui_1H'
+input_dir = r'E:\Takusan_no_Code\Dataset\Interim_Dataset\Dataset_CHINA\Anhui16_1H'
 # 输出文件夹
-output_dir = r'E:\Takusan_no_Code\Dataset\Interim_Dataset\Dataset_CHINA\Anhui_1H_Flood_Selected'
+output_dir = r'E:\Takusan_no_Code\Dataset\Interim_Dataset\Dataset_CHINA\Anhui16_612_1H'
 os.makedirs(output_dir, exist_ok=True)
 
 # 读取场次信息
 df_event = pd.read_excel(event_excel)
 
 for idx, row in df_event.iterrows():
-    event_id = row['FloodEvent_797']
+    event_id = row['FloodEvent_612']
     warmup_start = pd.to_datetime(row['Warmup_Start'])
     flood_start = pd.to_datetime(row['FloodEvent_Start'])
     flood_end = pd.to_datetime(row['FloodEvent_End'])

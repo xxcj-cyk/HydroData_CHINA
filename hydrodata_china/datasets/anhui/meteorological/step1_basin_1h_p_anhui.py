@@ -16,10 +16,10 @@ from hydrodata_china.settings.rainfall_methods import arithmetic_mean, thiessen_
 
 
 # File paths
-STATION_SHP = r"E:\GIS_Data\AnHui\Management\Precipitation_Station\Anhui_PST_93.shp"
-BASIN_SHP = r"E:\GIS_Data\AnHui\Basin\Anhui_Basins_21.shp"
+STATION_SHP = r"E:\GIS_Data\AnHui\Management\Precipitation_Station\Anhui_PST_68.shp"
+BASIN_SHP = r"E:\GIS_Data\AnHui\Basin\Anhui_Basins_16.shp"
 RAINFALL_FOLDER = r"E:\Takusan_no_Code\Dataset\Original_Dataset\Dataset_CHINA\Anhui\P_Station_21"
-OUTPUT_FOLDER_BASE = r"E:\Takusan_no_Code\Dataset\Interim_Dataset\Dataset_CHINA\Anhui_1H_Pmean"
+OUTPUT_FOLDER_BASE = r"E:\Takusan_no_Code\Dataset\Interim_Dataset\Dataset_CHINA\Anhui16_1H_Pmean"
 # Parameter settings
 BUFFER_DISTANCE = 2000 # Buffer distance around basin (meters)
 PROJECTED_CRS = "EPSG:32650"

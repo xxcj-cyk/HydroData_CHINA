@@ -11,14 +11,14 @@ import pandas as pd
 import xarray as xr
 
 # File paths
-FLOOD_EVENT_XLSX = r"E:\Takusan_no_Code\Dataset\Original_Dataset\Dataset_CHINA\Anhui\Flood_Event_21\FloodEvent_797.xlsx"
+FLOOD_EVENT_XLSX = r"E:\Takusan_no_Code\Dataset\Original_Dataset\Dataset_CHINA\Anhui\Flood_Event_21\FloodEvent16_612.xlsx"
 ATTRIBUTES_CSV = r"E:\Takusan_no_Code\Dataset\Original_Dataset\Dataset_CHINA\Anhui\Attributes_21\attributes.csv"
-OUTPUT_NC = r"E:\Takusan_no_Code\Dataset\Processed_Dataset\Dataset_CHINA\Anhui_1H\attributes.nc"
-OUTPUT_CSV = r"E:\Takusan_no_Code\Dataset\Processed_Dataset\Dataset_CHINA\Anhui_1H\attributes.csv"
+OUTPUT_NC = r"E:\Takusan_no_Code\Dataset\Processed_Dataset\Dataset_CHINA\Anhui16_1H\attributes.nc"
+OUTPUT_CSV = r"E:\Takusan_no_Code\Dataset\Processed_Dataset\Dataset_CHINA\Anhui16_1H\attributes.csv"
 
 # Read flood events
 flood_df = pd.read_excel(FLOOD_EVENT_XLSX)
-flood_events = flood_df['FloodEvent_797'].dropna().astype(str)
+flood_events = flood_df['FloodEvent_612'].dropna().astype(str)
 
 # Read basin attributes
 attributes_df = pd.read_csv(ATTRIBUTES_CSV)
@@ -37,14 +37,14 @@ records = []
 for event in flood_events:
     basin_code = event.split('_')[0]
     if basin_code in basin_attr_map:
-        record = {'FloodEvent_797': event}
+        record = {'FloodEvent_612': event}
         record.update(basin_attr_map[basin_code].to_dict())
         records.append(record)
     else:
         print(f"Warning: No attributes found for {event}")
 
 result_df = pd.DataFrame(records)
-result_df.rename(columns={'FloodEvent_797': 'basin'}, inplace=True)
+result_df.rename(columns={'FloodEvent_612': 'basin'}, inplace=True)
 result_df['basin'] = result_df['basin'].apply(lambda x: 'Anhui_' + x)
 
 # basin列移到第一列

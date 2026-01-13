@@ -13,11 +13,11 @@ import pandas as pd
 from glob import glob
 
 # 输入文件夹路径
-Q_dir = r'E:\Takusan_no_Code\Dataset\Interim_Dataset\Dataset_CHINA\Anhui_1H_Q'
-Pmean_dir = r'E:\Takusan_no_Code\Dataset\Interim_Dataset\Dataset_CHINA\Anhui_1H_Pmean\arithmetic'
-PET_dir = r'E:\Takusan_no_Code\Dataset\Interim_Dataset\Dataset_CHINA\Anhui_1H_anhui-PET'
-era5landPET_dir = r'E:\Takusan_no_Code\Dataset\Interim_Dataset\Dataset_CHINA\Anhui_1H_era5land-PET'
-output_dir = r'E:\Takusan_no_Code\Dataset\Interim_Dataset\Dataset_CHINA\Anhui_1H'
+Q_dir = r'E:\Takusan_no_Code\Dataset\Interim_Dataset\Dataset_CHINA\Anhui16_1H_Q'
+Pmean_dir = r'E:\Takusan_no_Code\Dataset\Interim_Dataset\Dataset_CHINA\Anhui16_1H_Pmean\arithmetic'
+PET_dir = r'E:\Takusan_no_Code\Dataset\Interim_Dataset\Dataset_CHINA\Anhui16_1H_PET_Anhui'
+# era5landPET_dir = r'E:\Takusan_no_Code\Dataset\Interim_Dataset\Dataset_CHINA\Anhui16_1H_PET_ERA5Land'
+output_dir = r'E:\Takusan_no_Code\Dataset\Interim_Dataset\Dataset_CHINA\Anhui16_1H'
 
 # 获取所有流域编码（Anhui_xxxxxxxx）
 def get_basin_codes(folder, suffix):
@@ -28,10 +28,13 @@ def get_basin_codes(folder, suffix):
 codes_q = get_basin_codes(Q_dir, '_Q_Anhui.csv')
 codes_p = get_basin_codes(Pmean_dir, '_Pmean_Anhui.csv')
 codes_pet = get_basin_codes(PET_dir, '_PET_Anhui.csv')
-codes_era5 = get_basin_codes(era5landPET_dir, '_PET_ERA5Land.csv')
+# codes_era5 = get_basin_codes(era5landPET_dir, '_PET_ERA5Land.csv')
 
-all_codes = codes_q & codes_p & codes_pet & codes_era5
+all_codes = codes_q & codes_p & codes_pet # & codes_era5
 print(f'共找到{len(all_codes)}个流域编码')
+
+# 创建输出目录
+os.makedirs(output_dir, exist_ok=True)
 
 # 生成完整时间序列（1960-01-01 00:00 到 2022-12-31 23:00）
 time_index = pd.date_range('1960-01-01 00:00', '2022-12-31 23:00', freq='h')
@@ -41,7 +44,7 @@ def read_and_merge(code):
 	file_q = os.path.join(Q_dir, f'Anhui_{code}_Q_Anhui.csv')
 	file_p = os.path.join(Pmean_dir, f'Anhui_{code}_Pmean_Anhui.csv')
 	file_pet = os.path.join(PET_dir, f'Anhui_{code}_PET_Anhui.csv')
-	file_era5 = os.path.join(era5landPET_dir, f'Anhui_{code}_PET_ERA5Land.csv')
+	# file_era5 = os.path.join(era5landPET_dir, f'Anhui_{code}_PET_ERA5Land.csv')
 
 	# 读取数据并标准化时间标签
 	def load_and_align(file):
@@ -61,11 +64,11 @@ def read_and_merge(code):
 	df_q = load_and_align(file_q)
 	df_p = load_and_align(file_p)
 	df_pet = load_and_align(file_pet)
-	df_era5 = load_and_align(file_era5)
+	# df_era5 = load_and_align(file_era5)
 
 	# 合并所有数据，按time对齐
 	df_merge = pd.DataFrame({'time': time_index})
-	for df in [df_q, df_p, df_pet, df_era5]:
+	for df in [df_q, df_p, df_pet]: #, df_era5
 		df_merge = df_merge.merge(df, on='time', how='left')
 	return df_merge
 

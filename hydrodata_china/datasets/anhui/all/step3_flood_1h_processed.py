@@ -11,6 +11,7 @@ import os
 import glob
 import numpy as np
 import csv
+import pandas as pd
 
 def identify_train_val_sets(folder_path, train_ratio=0.8, min_validation_samples=2):
     """
@@ -61,34 +62,41 @@ def identify_train_val_sets(folder_path, train_ratio=0.8, min_validation_samples
 
 def export_sets_to_csv(train_sets, val_sets, output_folder):
     """
-    将训练集和验证集的ID导出到CSV文件
+    将训练集和验证集的ID导出到Excel文件（xlsx）
     """
     os.makedirs(output_folder, exist_ok=True)
-    train_csv_path = os.path.join(output_folder, "train_sets.csv")
-    val_csv_path = os.path.join(output_folder, "validation_sets.csv")
-    with open(train_csv_path, 'w', newline='') as csvfile:
-        writer = csv.writer(csvfile)
-        writer.writerow(['basin'])
-        for basin_id, events in train_sets.items():
-            for event_id in events:
-                if event_id.startswith(f"Anhui_{basin_id}"):
-                    formatted_id = event_id
-                else:
-                    formatted_id = f"Anhui_{basin_id}_{event_id}"
-                writer.writerow([formatted_id])
-    with open(val_csv_path, 'w', newline='') as csvfile:
-        writer = csv.writer(csvfile)
-        writer.writerow(['basin'])
-        for basin_id, events in val_sets.items():
-            for event_id in events:
-                if event_id.startswith(f"Anhui_{basin_id}"):
-                    formatted_id = event_id
-                else:
-                    formatted_id = f"Anhui_{basin_id}_{event_id}"
-                writer.writerow([formatted_id])
-    print(f"\n训练集ID已导出到: {train_csv_path}")
-    print(f"验证集ID已导出到: {val_csv_path}")
-    return train_csv_path, val_csv_path
+    train_xlsx_path = os.path.join(output_folder, "train_sets.xlsx")
+    val_xlsx_path = os.path.join(output_folder, "validation_sets.xlsx")
+
+    # 构造训练集 DataFrame
+    train_rows = []
+    for basin_id, events in train_sets.items():
+        for event_id in events:
+            if event_id.startswith(f"Anhui_{basin_id}"):
+                formatted_id = event_id
+            else:
+                formatted_id = f"Anhui_{basin_id}_{event_id}"
+            train_rows.append({"basin": formatted_id})
+    train_df = pd.DataFrame(train_rows, columns=["basin"])
+
+    # 构造验证集 DataFrame
+    val_rows = []
+    for basin_id, events in val_sets.items():
+        for event_id in events:
+            if event_id.startswith(f"Anhui_{basin_id}"):
+                formatted_id = event_id
+            else:
+                formatted_id = f"Anhui_{basin_id}_{event_id}"
+            val_rows.append({"basin": formatted_id})
+    val_df = pd.DataFrame(val_rows, columns=["basin"])
+
+    # 写入 Excel（默认使用 openpyxl 引擎）
+    train_df.to_excel(train_xlsx_path, index=False)
+    val_df.to_excel(val_xlsx_path, index=False)
+
+    print(f"\n训练集ID已导出到: {train_xlsx_path}")
+    print(f"验证集ID已导出到: {val_xlsx_path}")
+    return train_xlsx_path, val_xlsx_path
 
 def read_csv_data(file_path):
     """
@@ -220,8 +228,8 @@ def process_csv_files(input_folder, output_folder):
             print(f"  {i+1}. {error_file['filename']}: {error_file['error']}")
 
 if __name__ == "__main__":
-    data_folder = r"E:\Takusan_no_Code\Dataset\Interim_Dataset\Dataset_CHINA\Anhui_1H_Flood_Selected"
-    output_folder = r"E:\Takusan_no_Code\Dataset\Processed_Dataset\Dataset_CHINA\Anhui_1H_Flood_Selected"
+    data_folder = r"E:\Takusan_no_Code\Dataset\Interim_Dataset\Dataset_CHINA\Anhui16_612_1H"
+    output_folder = r"E:\Takusan_no_Code\Dataset\Processed_Dataset\Dataset_CHINA\Anhui16_612_1H_Standardized"
     print("=" * 50)
     print("开始划分训练集和验证集...")
     print("=" * 50)

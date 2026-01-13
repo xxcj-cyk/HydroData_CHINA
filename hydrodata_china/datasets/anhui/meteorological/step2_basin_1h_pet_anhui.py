@@ -13,6 +13,7 @@ import os
 import pandas as pd
 import numpy as np
 import calendar
+import geopandas as gpd
 from datetime import datetime, timedelta
 
 
@@ -20,19 +21,37 @@ from datetime import datetime, timedelta
 STATION_MAPPING_XLSX = r"E:\Takusan_no_Code\Dataset\Original_Dataset\Dataset_CHINA\Anhui\PET_Station_21\流域蒸发站对应表.xlsx"
 EVAP_DIR = r"E:\Takusan_no_Code\Dataset\Original_Dataset\Dataset_CHINA\Anhui\PET_Station_21"
 PET_MONTHLY_XLSX = r"E:\Takusan_no_Code\Dataset\Original_Dataset\Dataset_CHINA\Anhui\PET_Station_21\多年平均月蒸散发.xlsx"
-OUTPUT_DIR = r"E:\Takusan_no_Code\Dataset\Interim_Dataset\Dataset_CHINA\Anhui_1H_anhui-PET"
+BASIN_SHP = r"E:\GIS_Data\AnHui\Basin\Anhui_Basins_16.shp"
+OUTPUT_DIR = r"E:\Takusan_no_Code\Dataset\Interim_Dataset\Dataset_CHINA\Anhui16_1H_PET_Anhui"
 # Parameter settings
 START_YEAR = 1960
 END_YEAR = 2022
 
 
-def load_basin_station_mapping():
-    """Load basin to evaporation station mapping."""
+def load_target_basin_ids():
+    """Load target basin IDs from shapefile (16 basins)."""
+    print("---Loading target basin IDs from shapefile---")
+    basins_gdf = gpd.read_file(BASIN_SHP)
+    target_basin_ids = set(basins_gdf['Basin_ID'].tolist())
+    print(f"Found {len(target_basin_ids)} target basins")
+    return target_basin_ids
+
+
+def load_basin_station_mapping(target_basin_ids=None):
+    """Load basin to evaporation station mapping, optionally filtered to target basins."""
     print("---Loading station-basin mapping---")
     mapping_df = pd.read_excel(STATION_MAPPING_XLSX, sheet_name=1)
     id_col = "流域ID" if "流域ID" in mapping_df.columns else mapping_df.columns[0]
     station_col = "对应蒸发站" if "对应蒸发站" in mapping_df.columns else mapping_df.columns[1]
     basin_to_station = dict(zip(mapping_df[id_col], mapping_df[station_col]))
+    
+    # Filter to only target basins if provided
+    if target_basin_ids is not None:
+        original_count = len(basin_to_station)
+        basin_to_station = {bid: station for bid, station in basin_to_station.items() 
+                           if bid in target_basin_ids}
+        print(f"Filtered mapping from {original_count} to {len(basin_to_station)} basins")
+    
     return basin_to_station
 
 
@@ -105,11 +124,17 @@ def process_basin_pet(basin_id, station_name, station_data, monthly_pet_hourly):
 
 
 def main():
-    basin_to_station = load_basin_station_mapping()
+    # Load target basin IDs (16 basins)
+    target_basin_ids = load_target_basin_ids()
+    
+    # Load mapping filtered to only target basins
+    basin_to_station = load_basin_station_mapping(target_basin_ids)
+    
     station_data = load_station_evap_data()
     monthly_pet_hourly = generate_monthly_pet_hourly(basin_to_station)
     print("---Processing PET for all basins---")
     os.makedirs(OUTPUT_DIR, exist_ok=True)
+    print(f"Processing {len(basin_to_station)} basins...")
     for basin_id, station_name in basin_to_station.items():
         process_basin_pet(basin_id, station_name, station_data, monthly_pet_hourly)
     print("---All basins processed!---")

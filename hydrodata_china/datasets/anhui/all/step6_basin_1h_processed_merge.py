@@ -157,7 +157,7 @@ def merge_csv_files_by_basin(input_folder, output_folder):
 
 
 if __name__ == "__main__":
-    input_folder = r"E:\Takusan_no_Code\Dataset\Processed_Dataset\Dataset_CHINA\Anhui_1H_Flood_Selected"
-    output_folder = r"E:\Takusan_no_Code\Dataset\Processed_Dataset\Dataset_CHINA\Anhui_1H_Selected"
+    input_folder = r"E:\Takusan_no_Code\Dataset\Processed_Dataset\Dataset_CHINA\Anhui16_612_1H_Filled"
+    output_folder = r"E:\Takusan_no_Code\Dataset\Processed_Dataset\Dataset_CHINA\Anhui16_612_1H_Merged"
     success_basins, failed_basins = merge_csv_files_by_basin(input_folder, output_folder)
     logging.info("处理完成！")
