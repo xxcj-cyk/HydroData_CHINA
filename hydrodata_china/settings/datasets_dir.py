@@ -17,4 +17,9 @@ DATASETS_DIR = {
         "CACHE_DIR": Path(hydro_dirction.get_cache_dir(dataset_type="Dataset_CHINA", dataset_name="Anhui_1H")),
         "EXPORT_DIR": Path(hydro_dirction.get_export_dir(dataset_type="Dataset_CHINA", dataset_name="Anhui_1H")),
     },
+    "Anhui16_612_1H": {
+        "ROOT_DIR": Path(hydro_dirction.get_origin_dir(dataset_type="Dataset_CHINA", dataset_name="Anhui_Project")),
+        "CACHE_DIR": Path(hydro_dirction.get_cache_dir(dataset_type="Dataset_CHINA", dataset_name="Anhui16_612_1H")),
+        "EXPORT_DIR": Path(hydro_dirction.get_export_dir(dataset_type="Dataset_CHINA", dataset_name="Anhui16_612_1H")),
+    },
 }
