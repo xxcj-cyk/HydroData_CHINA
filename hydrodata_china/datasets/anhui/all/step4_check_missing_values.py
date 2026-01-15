@@ -333,6 +333,5 @@ def check_missing_values(input_folder):
 
 if __name__ == "__main__":
     input_folder = r"E:\Takusan_no_Code\Dataset\Processed_Dataset\Dataset_CHINA\Anhui16_612_1H_Standardized"
-    
     check_missing_values(input_folder)
     logging.info("检查完成！")
